@@ -1,0 +1,12 @@
+<form data-test-validator-container novalidate>
+  {{yield
+    (hash
+      validating=validating
+      isValid=isValid
+      checkForm=(action "checkForm")
+      validity=(component "ember-ts-job-posting@shared/validator-wrapper"
+        validating=validating
+      )
+    )
+  }}
+</form>
