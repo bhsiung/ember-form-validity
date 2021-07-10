@@ -1,7 +1,6 @@
 import { setProperties } from '@ember/object';
 import Component from '@ember/component';
-import layout from 'ember-ts-job-posting/templates/components/shared/validator-container';
-import { isMobile } from 'ember-ts-common/utils/is-mobile';
+import layout from 'ember-form-validation/components/validator-container';
 
 /**
  * The container of the form to be validated, maintain the validation result map
@@ -26,7 +25,7 @@ export default Component.extend({
       const isValid = !this.element.querySelector(invalidSelector);
 
       setProperties(this, { isValid, validating: true });
-      if (!isValid && !isMobile()) {
+      if (!isValid) {
         this.element.querySelector(invalidSelector).focus();
       }
 

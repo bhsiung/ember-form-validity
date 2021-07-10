@@ -3,8 +3,6 @@ import { setupRenderingTest } from 'ember-qunit';
 import { fillIn, click, render } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
-import isMobileUtil from 'ember-ts-common/utils/is-mobile';
-import { getEnvironmentHost } from 'ember-ts-common/utils/environment-host';
 
 const LINKEDIN_EMAIL_ERROR = 'LINKEDIN_EMAIL_ERROR';
 const LINKEDIN_URL_ERROR = 'LINKEDIN_URL_ERROR';
@@ -94,7 +92,7 @@ module('Integration | Component | shared/validator-container', (hooks) => {
   });
 
   test('it can validate form when validating = false by default', async function(assert) {
-    this.applyMethod = { methodType: 'url', value: `${getEnvironmentHost()}/talent/post-a-job` };
+    this.applyMethod = { methodType: 'url', value: `/talent/post-a-job` };
     this.validateApplyMethod = validateApplyMethod;
     this.notLinkedinEmail = notLinkedinEmail;
     this.notMsEmail = notMsEmail;
@@ -162,69 +160,5 @@ module('Integration | Component | shared/validator-container', (hooks) => {
 
     await click('[data-test-submit]');
     assert.ok(this.onSubmit.called, 'submit callback went thru because form validation passed');
-  });
-
-  test('it validates the form but not focus on any field on mobile view', async function(assert) {
-    this.applyMethod = { methodType: 'url', value: `${getEnvironmentHost()}/talent/post-a-job` };
-    this.validateApplyMethod = validateApplyMethod;
-    this.notLinkedinEmail = notLinkedinEmail;
-    this.notMsEmail = notMsEmail;
-    this.emailValue = 'bear@linkedin.com';
-    sinon.stub(isMobileUtil, 'isMobile').returns(true);
-
-    await render(hbs`
-      {{#ember-ts-job-posting$shared/validator-container
-        validating=false
-        as |v|
-      }}
-        {{#unless v.isValid}}
-          <p data-test-global-error>something wrong</p>
-        {{/unless}}
-
-        {{#v.validity
-          validators=(array this.notLinkedinEmail this.notMsEmail)
-          as |validity|
-        }}
-          {{simple-email-field
-            required=true
-            value=this.emailValue
-            name="simple-email"
-            onValidate=validity.validator
-          }}
-          {{#if validity.errorMessage}}
-            <p id="abc3" data-test-error="simple-email">{{validity.errorMessage}}</p>
-          {{/if}}
-        {{/v.validity}}
-
-        {{#v.validity
-          validators=(array this.validateApplyMethod)
-          as |validity|
-        }}
-          {{complex-input-field
-            applyMethod=this.applyMethod
-            describedById="abc3"
-            validating=v.validating
-            required=true
-            onValidate=validity.validator
-          }}
-          {{#if validity.errorMessage}}
-            <p id="abc3" data-test-error="apply-method">{{validity.errorMessage}}</p>
-          {{/if}}
-        {{/v.validity}}
-
-        <button onClick={{action v.checkForm this.onSubmit}} data-test-submit>continue</button>
-      {{/ember-ts-job-posting$shared/validator-container}}
-    `);
-
-    assert.dom('[data-test-validator-container]').exists();
-    assert.dom('[data-test-error]').doesNotExist('No error displayed since validating is false');
-
-    await click('[data-test-submit]');
-    assert.dom('[data-test-global-error]').hasText('something wrong', 'global error should be rendered');
-    assert.dom('[data-test-error="apply-method"]').hasText(LINKEDIN_URL_ERROR);
-    assert.dom('[data-test-error="simple-email"]').hasText(LINKEDIN_EMAIL_ERROR);
-    assert.dom('input[name="simple-email"]').isNotFocused('the first invalid element should not be focused');
-    assert.dom('input[name="apply-method-value"]').isNotFocused('the second invalid element should not be focused');
-    assert.notOk(this.onSubmit.called, 'submit callback stopped because form validation failed');
   });
 });

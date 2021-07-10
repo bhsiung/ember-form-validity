@@ -2,7 +2,6 @@ import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { render, find, fillIn, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
-import { getEnvironmentHost } from 'ember-ts-common/utils/environment-host';
 
 const LINKEDIN_EMAIL_ERROR = 'LINKEDIN_EMAIL_ERROR';
 const LINKEDIN_URL_ERROR = 'LINKEDIN_URL_ERROR';
@@ -57,7 +56,7 @@ module('Integration | Component | shared/validator-wrapper', (hooks) => {
     };
 
     await render(hbs`
-      {{#ember-ts-job-posting$shared/validator-wrapper
+      {{#validator-wrapper
         validators=(array this.validateNotEmpty)
         validating=this.validating
         as |validity|
@@ -72,7 +71,7 @@ module('Integration | Component | shared/validator-wrapper', (hooks) => {
         {{#if validity.errorMessage}}
           <p data-test-error>{{validity.errorMessage}}</p>
         {{/if}}
-      {{/ember-ts-job-posting$shared/validator-wrapper}}
+      {{/validator-wrapper}}
     `);
 
     assert.dom('[data-test-error]').doesNotExist('since validating is false, no error rendered');
@@ -101,7 +100,7 @@ module('Integration | Component | shared/validator-wrapper', (hooks) => {
     this.validating = false;
 
     await render(hbs`
-      {{#ember-ts-job-posting$shared/validator-wrapper
+      {{#validator-wrapper
         validators=(array this.notLinkedinEmail this.notMsEmail)
         validating=this.validating
         as |validity|
@@ -116,7 +115,7 @@ module('Integration | Component | shared/validator-wrapper', (hooks) => {
         {{#if validity.errorMessage}}
           <p data-test-error>{{validity.errorMessage}}</p>
         {{/if}}
-      {{/ember-ts-job-posting$shared/validator-wrapper}}
+      {{/validator-wrapper}}
     `);
 
     assert.dom('[data-test-error]').doesNotExist('since validating is false, no error rendered');
@@ -185,7 +184,7 @@ module('Integration | Component | shared/validator-wrapper', (hooks) => {
     this.validating = false;
     this.required = true;
     await render(hbs`
-      {{#ember-ts-job-posting$shared/validator-wrapper
+      {{#validator-wrapper
         validators=(array this.validateApplyMethod)
         validating=this.validating
         as |validity|
@@ -200,7 +199,7 @@ module('Integration | Component | shared/validator-wrapper', (hooks) => {
         {{#if validity.errorMessage}}
           <p id="abc3" data-test-error>{{validity.errorMessage}}</p>
         {{/if}}
-      {{/ember-ts-job-posting$shared/validator-wrapper}}
+      {{/validator-wrapper}}
     `);
 
     assert.dom('[data-test-error]').doesNotExist('since validating is false, no error rendered');
@@ -239,7 +238,7 @@ module('Integration | Component | shared/validator-wrapper', (hooks) => {
       .hasText('Please enter an URL.', 'display error message for not an URL (constraint violation)');
 
     // enter linkedin URL
-    await fillIn('[name="apply-method-value"]', `${getEnvironmentHost()}/talent/post-a-job`);
+    await fillIn('[name="apply-method-value"]', `/talent/post-a-job`);
     assert.dom('[data-test-error]').hasText(LINKEDIN_URL_ERROR, 'linkedin URL is not allowed (custom violation)');
 
     // enter non-linkedin URL
@@ -254,7 +253,7 @@ module('Integration | Component | shared/validator-wrapper', (hooks) => {
       value: ''
     });
     await render(hbs`
-      {{#ember-ts-job-posting$shared/validator-wrapper
+      {{#validator-wrapper
         tagName=this.tagName
         type=this.type
         value=this.value
@@ -271,7 +270,7 @@ module('Integration | Component | shared/validator-wrapper', (hooks) => {
         {{#if validity.errorMessage}}
           <p data-test-error>{{validity.errorMessage}}</p>
         {{/if}}
-      {{/ember-ts-job-posting$shared/validator-wrapper}}
+      {{/validator-wrapper}}
     `);
 
     assert
