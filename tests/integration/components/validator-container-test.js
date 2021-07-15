@@ -9,23 +9,27 @@ const LINKEDIN_URL_ERROR = 'LINKEDIN_URL_ERROR';
 const MS_EMAIL_ERROR = 'MS_EMAIL_ERROR';
 
 function notLinkedinEmail(value) {
-  return /.+@linkedin\.com$/.test(value) ? { name: 'simple-email', message: LINKEDIN_EMAIL_ERROR } : null;
+  return /.+@linkedin\.com$/.test(value)
+    ? { name: 'simple-email', message: LINKEDIN_EMAIL_ERROR }
+    : null;
 }
 
 function notMsEmail(value) {
-  return /.+@microsoft\.com$/.test(value) ? { name: 'simple-email', message: MS_EMAIL_ERROR } : null;
+  return /.+@microsoft\.com$/.test(value)
+    ? { name: 'simple-email', message: MS_EMAIL_ERROR }
+    : null;
 }
 
 function validateApplyMethod({ methodType, value }) {
   if (methodType === 'email' && /^.+@linkedin.com$/.test(value)) {
     return {
       name: 'apply-method-value',
-      message: LINKEDIN_EMAIL_ERROR
+      message: LINKEDIN_EMAIL_ERROR,
     };
   } else if (methodType === 'url' && /^.+linkedin.com/.test(value)) {
     return {
       name: 'apply-method-value',
-      message: LINKEDIN_URL_ERROR
+      message: LINKEDIN_URL_ERROR,
     };
   }
 
@@ -35,11 +39,11 @@ function validateApplyMethod({ methodType, value }) {
 module('Integration | Component | shared/validator-container', (hooks) => {
   setupRenderingTest(hooks);
 
-  hooks.beforeEach(function() {
+  hooks.beforeEach(function () {
     this.onSubmit = sinon.stub();
   });
 
-  test('it renders', async function(assert) {
+  test('it renders', async function (assert) {
     this.validating = true;
 
     await render(hbs`
@@ -57,7 +61,7 @@ module('Integration | Component | shared/validator-container', (hooks) => {
     assert.dom('[data-test-global-error]').doesNotExist();
   });
 
-  test('it can validate form when validating = true by default', async function(assert) {
+  test('it can validate form when validating = true by default', async function (assert) {
     this.applyMethod = { methodType: '', value: '' };
     this.validateApplyMethod = validateApplyMethod;
 
@@ -88,10 +92,12 @@ module('Integration | Component | shared/validator-container', (hooks) => {
     `);
 
     assert.dom('[data-test-validator-container]').exists();
-    assert.dom('[data-test-error="apply-method"]').exists('required field validation error (constraint validation)');
+    assert
+      .dom('[data-test-error="apply-method"]')
+      .exists('required field validation error (constraint validation)');
   });
 
-  test('it can validate form when validating = false by default', async function(assert) {
+  test('it can validate form when validating = false by default', async function (assert) {
     this.applyMethod = { methodType: 'url', value: `/talent/post-a-job` };
     this.validateApplyMethod = validateApplyMethod;
     this.notLinkedinEmail = notLinkedinEmail;
@@ -143,14 +149,25 @@ module('Integration | Component | shared/validator-container', (hooks) => {
     `);
 
     assert.dom('[data-test-validator-container]').exists();
-    assert.dom('[data-test-error]').doesNotExist('No error displayed since validating is false');
+    assert
+      .dom('[data-test-error]')
+      .doesNotExist('No error displayed since validating is false');
 
     await click('[data-test-submit]');
-    assert.dom('[data-test-global-error]').hasText('something wrong', 'global error should be rendered');
+    assert
+      .dom('[data-test-global-error]')
+      .hasText('something wrong', 'global error should be rendered');
     assert.dom('[data-test-error="apply-method"]').hasText(LINKEDIN_URL_ERROR);
-    assert.dom('[data-test-error="simple-email"]').hasText(LINKEDIN_EMAIL_ERROR);
-    assert.dom('input[name="simple-email"]').isFocused('the first invalid element should be focused');
-    assert.notOk(this.onSubmit.called, 'submit callback stopped because form validation failed');
+    assert
+      .dom('[data-test-error="simple-email"]')
+      .hasText(LINKEDIN_EMAIL_ERROR);
+    assert
+      .dom('input[name="simple-email"]')
+      .isFocused('the first invalid element should be focused');
+    assert.notOk(
+      this.onSubmit.called,
+      'submit callback stopped because form validation failed'
+    );
 
     // fix everything
     await fillIn('input[name="apply-method-value"]', 'https://www.google.com');
@@ -159,6 +176,9 @@ module('Integration | Component | shared/validator-container', (hooks) => {
     assert.dom('[data-test-error="simple-email"]').doesNotExist();
 
     await click('[data-test-submit]');
-    assert.ok(this.onSubmit.called, 'submit callback went thru because form validation passed');
+    assert.ok(
+      this.onSubmit.called,
+      'submit callback went thru because form validation passed'
+    );
   });
 });

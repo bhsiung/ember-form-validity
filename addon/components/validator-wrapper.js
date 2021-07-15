@@ -1,7 +1,6 @@
-import Component from '@ember/component';
-import layout from 'ember-form-validation/components/validator-wrapper';
-import { computed, get, set } from '@ember/object';
-import { inject as service } from '@ember/service';
+import Component from '@glimmer/component';
+import { action, set } from '@ember/object';
+import { tracked } from '@glimmer/tracking';
 
 /**
  * The error type will be returned when validate against a component with multiple input fields
@@ -44,32 +43,26 @@ import { inject as service } from '@ember/service';
  *   <p id="abc4">{{validity.error}}</p>
  * {{/v.validity}}
  */
-export default Component.extend({
-  i18n: service('i18n'),
-  jet: service('jet'),
-  layout,
-
+export default class ValidatorWrapper extends Component {
   /**
    * The error message will be used to print the error message
    * @type {string}
    */
-  error: '',
-
-  tagName: '',
+  @tracked error = '';
 
   /**
    * A reference point to the last invalid input field, will be used to reset before a new round of validation
    * @type {DOMNode}
    */
-  lastElementWithCustomError: null,
+  lastElementWithCustomError = null;
 
   /**
    * proxied error message based on the `validating` flag
    * @type {string}
    */
-  errorMessage: computed('error', 'validating', function() {
-    return this.validating ? this.error : '';
-  }).readOnly(),
+  get errorMessage() {
+    return this.args.validating ? this.error : '';
+  }
 
   /**
    * Perform custom validating against given list of validators, stop and return as soon as first failure
@@ -79,8 +72,8 @@ export default Component.extend({
    * @returns {ErrorObject}
    */
   customValidate(...args) {
-    if (Array.isArray(this.validators)) {
-      for (const validator of this.validators) {
+    if (Array.isArray(this.args.validators)) {
+      for (const validator of this.args.validators) {
         const result = validator(...args);
 
         if (result) return result;
@@ -88,7 +81,7 @@ export default Component.extend({
     }
 
     return null;
-  },
+  }
 
   /**
    * 1. perform validation
@@ -100,8 +93,8 @@ export default Component.extend({
    *   the input component and the custom validator functions
    * @returns {string}
    */
-  _getCustomError(rootElement, ...args) {
-    if (!this.validators) return '';
+  _getCustomError(element, ...args) {
+    if (!this.args.validators) return '';
 
     const error = this.customValidate(...args);
 
@@ -109,21 +102,15 @@ export default Component.extend({
       this.lastElementWithCustomError = null;
 
       return '';
-    } else if (typeof error === 'object') {
-      const invalidElement = rootElement.querySelector(`[name="${error.name}"]`);
+    } else if (typeof error === 'string') {
+      this._setCustomValidity(element, error, /** isAriaInvalid*/ true);
+      this.lastElementWithCustomError = element;
 
-      if (!invalidElement && error.message) {
-        throw new Error(`selector of [name="${error.selector}"] cannot find anything`);
-      }
-
-      this._setCustomValidity(invalidElement, error.message, /** isAriaInvalid*/ true);
-      this.lastElementWithCustomError = invalidElement;
-
-      return error.message;
+      return error;
     }
 
     return '';
-  },
+  }
 
   /**
    * Helper function to set or clear the error attributes on the element. It handles the error differently
@@ -139,7 +126,7 @@ export default Component.extend({
     } else {
       invalidElement.setCustomValidity(errorMessage);
     }
-  },
+  }
 
   /**
    * Recursively collect constraint violation within the given root element
@@ -148,77 +135,55 @@ export default Component.extend({
    * @returns {String} error string, empty string (`''`) if no error
    */
   _collectConstraintViolation(rootElement) {
-    const elementsForConstraintValidation = [rootElement, ...rootElement.querySelectorAll('input[name],select[name]')];
-    const valueMissingToI18nMap = {
-      input: 'i18n_js_validity_input_value_missing',
-      select: 'i18n_js_validity_select_value_missing'
-    };
-    const typeMismatchToI18nMap = {
-      email: 'i18n_js_validity_type_mismatch_email',
-      url: 'i18n_js_validity_type_mismatch_url'
-    };
-
-    for (const element of elementsForConstraintValidation) {
-      if (element.validity && !element.validity.customError && !element.validity.valid) {
-        const inputType = element.getAttribute('type') && element.getAttribute('type').toLowerCase();
-        const tagName = element.tagName.toLowerCase();
-
-        if (element.validity.valueMissing && valueMissingToI18nMap[tagName]) {
-          return get(this, 'i18n').lookupTranslation(
-            'ember-ts-job-posting@components/shared/validator-wrapper',
-            valueMissingToI18nMap[tagName]
-          )();
-        } else if (element.validity.typeMismatch && typeMismatchToI18nMap[inputType]) {
-          return get(this, 'i18n').lookupTranslation(
-            'ember-ts-job-posting@components/shared/validator-wrapper',
-            typeMismatchToI18nMap[inputType]
-          )();
-        } else if (element.validity.patternMismatch) {
-          return get(this, 'i18n').lookupTranslation(
-            'ember-ts-job-posting@components/shared/validator-wrapper',
-            'i18n_js_validity_pattern_mismatch'
-          )();
-        }
-        // TODO bhsiung - support min (rangeUnderflow) & max (rangeOverflow) for type=number
-        // TODO bhsiung - support minlength (tooShort) & maxlength (tooLong)
-        this.jet.logError(
-          `The invalidation is not categorized, unable to render a predefined error message via LI i18n library. Utilized the default error message by browser: ${element.validationMessage}`,
-          [
-            'ember-ts-job-posting',
-            'ember-ts-job-posting@addon/components/shared/validator-wrapper#_collectConstraintViolation'
-          ],
-          false
-        );
-        return element.validationMessage;
-      }
+    const element = rootElement.querySelector('input,select') ?? rootElement;
+    if (
+      element.validity &&
+      !element.validity.customError &&
+      !element.validity.valid
+    ) {
+      // TODO @bear
+      // if (element.validity.valueMissing) {
+      // } else if (element.validity.typeMismatch) {
+      // } else if (element.validity.patternMismatch) {
+      // }
+      // TODO bhsiung - support min (rangeUnderflow) & max (rangeOverflow) for type=number
+      // TODO bhsiung - support minlength (tooShort) & maxlength (tooLong)
+      return element.validationMessage;
     }
 
-    return '';
-  },
+    return undefined;
+  }
 
-  actions: {
-    /**
-     * Perform a series of form validation, will be invoked by form input field (oninput)
-     *
-     * @param {DOMNode} rootElement - the root element of the input field
-     * @param {array} ...args - the information needed for validation. this part requires a co-op between
-     *   the input component and the custom validator functions
-     * @return {string}
-     */
-    contextualValidator(rootElement, ...args) {
-      if (this.lastElementWithCustomError) {
-        // this is needed for a corner case. assume both constraint and custom validator exists, a
-        // node failed on custom validation from the last execution, user fixed it but violate the
-        // constraint validation immediately. There is no easy way to tell if there is constraint
-        // validation without rest the custom error first
-        this._setCustomValidity(this.lastElementWithCustomError, /** errorMessage */ '', /** isAriaInvalid*/ false);
-      }
-
-      return set(
-        this,
-        'error',
-        this._collectConstraintViolation(rootElement) || this._getCustomError(rootElement, ...args)
+  /**
+   * Perform a series of form validation, will be invoked by form input field (oninput)
+   *
+   * @param {DOMNode} rootElement - the root element of the input field
+   * @param {array} ...args - the information needed for validation. this part requires a co-op between
+   *   the input component and the custom validator functions
+   * @return {string}
+   */
+  @action contextualValidator(rootElement, ...args) {
+    if (this.lastElementWithCustomError) {
+      // this is needed for a corner case. assume both constraint and custom validator exists, a
+      // node failed on custom validation from the last execution, user fixed it but violate the
+      // constraint validation immediately. There is no easy way to tell if there is constraint
+      // validation without rest the custom error first
+      this._setCustomValidity(
+        this.lastElementWithCustomError,
+        /** errorMessage */ '',
+        /** isAriaInvalid*/ false
       );
     }
+
+    console.log(
+      this._collectConstraintViolation(rootElement) ??
+        this._getCustomError(rootElement, ...args)
+    );
+    return set(
+      this,
+      'error',
+      this._collectConstraintViolation(rootElement) ??
+        this._getCustomError(rootElement, ...args)
+    );
   }
-});
+}
