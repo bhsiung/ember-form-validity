@@ -182,7 +182,7 @@ export default class ValidatorWrapper extends Component {
     this.targetInputNames = intersection(modelKeys, inputNames);
     warn(
       'Discovered some inputs does not have a `name` attribute, they will be ignored while validating',
-      element.querySelectorAll('input:not([name]),select:not([name])').length,
+      !element.querySelectorAll('input:not([name]),select:not([name])').length,
       { id: 'ember-form-validation.input-without-name-attr' }
     );
   }
