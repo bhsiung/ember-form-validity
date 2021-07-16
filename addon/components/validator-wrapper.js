@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import { action, set } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
+import { assert } from '@ember/debug';
 
 /**
  * The error type will be returned when validate against a component with multiple input fields
@@ -154,6 +155,21 @@ export default class ValidatorWrapper extends Component {
     return undefined;
   }
 
+  @action
+  onUpdate(element) {
+    console.log('update');
+    this.inputElement = element.querySelector('input,select');
+    assert(
+      'more than 2 input elements detected within the component, only the first one will be used for validation',
+      element.querySelectorAll('input,select').length === 1
+    );
+
+    this.contextualValidator(this.inputElement, this.args.value);
+  }
+
+  onInsert() {
+    console.log('insert');
+  }
   /**
    * Perform a series of form validation, will be invoked by form input field (oninput)
    *

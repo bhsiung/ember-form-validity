@@ -1,3 +1,6 @@
-<div {{validates (action "contextualValidator") value=@value}}>
+<div
+  {{did-update this.onUpdate value=@value}}
+  {{did-insert this.onUpdate value=@value}}
+  >
   {{yield (hash errorMessage=this.errorMessage)}}
 </div>
