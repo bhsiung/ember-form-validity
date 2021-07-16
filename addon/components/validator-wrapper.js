@@ -73,7 +73,7 @@ export default class ValidatorWrapper extends Component {
    * @returns {ErrorObject}
    */
   _customValidate() {
-    const validators = this._getValidators();
+    const validators = this.validators;
     for (const validator of validators) {
       const result = validator(this.args.model);
 
@@ -83,28 +83,22 @@ export default class ValidatorWrapper extends Component {
     return null;
   }
 
-  _getValidators() {
+  get validators() {
     return this.args.validators ?? [this.args.validator];
   }
 
   /**
-   * 1. perform validation
-   * 2. associate error message to input element
-   * 3. cache invalid element
-   *
    * @param {DOMNode} rootElement - the root element of the input field
-   * @param {array} ...args - the information needed for validation. this part requires a co-op between
-   *   the input component and the custom validator functions
-   * @returns {string}
+   * @returns {object}
    */
   _getCustomError(element) {
-    if (!this._getValidators()) return undefined;
+    if (this.validators.length === 0) return {};
 
     const error = this._customValidate(element);
 
     if (!error) {
       this.hadCustomError = false;
-      return undefined;
+      return {};
     } else if (typeof error === 'object') {
       this._setCustomValidity(element, error, /** isAriaInvalid*/ true);
       this.hadCustomError = true;
@@ -112,7 +106,7 @@ export default class ValidatorWrapper extends Component {
       return error;
     }
 
-    return undefined;
+    return {};
   }
 
   /**
