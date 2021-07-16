@@ -2,96 +2,101 @@ import Component from '@glimmer/component';
 import { action, setProperties } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
 import { intersection } from 'ember-form-validation/utils/array-helpers';
+import { warn } from '@ember/debug';
 
 /**
- * The error type will be returned when validate against a component with multiple input fields
- * The structure allow identifying the error message to a specific element based on the `name`
- * @typedef ErrorObject
- * @type {object}
- * @property {string} message - the invalid error message
- * @property {string} name - the name of the input element
+ * The structured error message will be used to print the error message, using
+ * key-value structure that maps the element `name` attribute to the error
+ * message it associates to
+ * @type {Object.<string, string>} ValidationError
  */
 
 /**
- * This callback represents the custom validation such as max lenth check
+ * The structured model will be used to associates the current value of each
+ * input element, using key-value structure that maps the element `name`
+ * attribute to its value
+ * @type {Object.<string, any>} ModelForValidation
+ */
+
+/**
+ * This callback represents the custom validation such as max length check
  * @callback CustomValidatorCallback
- * @param {any} params - any value passed in to onValidate in the form control component which is needed by validation
+ * @param {ModelForValidation} model
  * @return {ErrorObject}
  */
 
 /**
- * Validate entity which share the context from validator-container, bridge to the actual input component.
- *
  * @param {boolean} validating - determine if the form is in validating mode
+ * @param {ModelForValidation} model - immutable model to be used for validation
  * @param {CustomValidatorCallback[]} [validators] - a set of validator to be test against
+ * @param {CustomValidatorCallback[]} [validator] - single custom validator to be test against
  *
  * yield properties
- * @param {Function} validator - a reference to `actions.contextualValidator`
- * @param {string} errorMessage - the error message to be rendered
+ * @param {ValidationError} errorMessage
  *
  * e.g.
- * {{#ember-ts-job-posting$shared/validator-wrapper
- *   validators=(array onValidateApplyMethod)
- *   validating=false
- *   as |validity|
- * }}
- *   {{complex-input
- *     applyMethod=applyMethod
- *     describedById="abc3"
- *     validating=v.validating
- *     onValidate=validity.validator
- *   }}
- *   <p id="abc4">{{validity.error}}</p>
- * {{/v.validity}}
+ * <ValidatorWrapper
+ *   @validator={{this.notLinkedinEmail}}
+ *   @validating={{this.validating}}
+ *   @model={{this.model}}
+ *   as |v|
+ * >
+ *   <input
+ *     name="email"
+ *     value={{this.model.email}}
+ *     {{on "input" this.onInput}}
+ *     required
+ *   />
+ *   <p data-test-error>{{v.errorMessage.email}}</p>
+ * </ValidatorWrapper>
  */
 export default class ValidatorWrapper extends Component {
   /**
-   * The error message will be used to print the error message
-   * @type {string}
+   * @type {ValidationError}
    */
   @tracked error = {};
 
   /**
-   * A reference point to the last invalid input field, will be used to reset before a new round of validation
-   * @type {DOMNode}
+   * A flag to indicate if there has been a custom error detected from the last round
+   * @type {boolean}
    */
   hadCustomError = false;
 
   /**
    * proxied error message based on the `validating` flag
+   * @readonly
+   * @memberof ValidatorWrapper
    * @type {string}
    */
   get errorMessage() {
     return this.args.validating ? this.error : {};
   }
-
   /**
-   * Perform custom validating against given list of validators, stop and return as soon as first failure
-   *
-   * @param {array} ...args - the information needed for validation. this part requires a co-op between
-   *   the input component and the custom validator functions
-   * @returns {ErrorObject}
+   * a generic reference point to the array of validator argument
+   * @readonly
+   * @memberof ValidatorWrapper
+   * @type {Function[]}
    */
-  _customValidate() {
-    const validators = this.validators;
-    for (const validator of validators) {
-      const result = validator(this.args.model);
-
-      if (result) return result;
-    }
-
-    return null;
-  }
-
   get validators() {
     return this.args.validators ?? [this.args.validator];
   }
 
   /**
-   * @param {DOMNode} rootElement - the root element of the input field
-   * @returns {object}
+   * @returns {ValidationError}
    */
-  _getCustomError(element) {
+  _customValidate() {
+    for (const validator of this.validators) {
+      const result = validator(this.args.model);
+      if (result) return result;
+    }
+    return {};
+  }
+
+  /**
+   * @param {DOMNode} element - the wrapper element
+   * @returns {ValidationError}
+   */
+  _collectCustomViolation(element) {
     if (this.validators.length === 0) return {};
 
     const error = this._customValidate(element);
@@ -110,16 +115,18 @@ export default class ValidatorWrapper extends Component {
   }
 
   /**
-   * Helper function to set or clear the error attributes on the element. It handles the error differently
-   * based on whether or not `setCustomValidity` is available function on this element.
-   * @param {Element} invalidElement
-   * @param {object} error
+   * Helper function to set or clear the error attributes on the element. It
+   * handles the error differently based on whether or not `setCustomValidity`
+   * is available function on this element.
+   * @param {Element} rootElement
+   * @param {ValidationError} error
    * @param {Boolean} isAriaInvalid
    */
   _setCustomValidity(rootElement, error, isAriaInvalid) {
     for (const inputName of this.targetInputNames) {
       const inputElement = rootElement.querySelector(`[name=${inputName}]`);
       if (!inputElement.setCustomValidity) {
+        isAriaInvalid;
         // TODO bear - work on artificial validation later
         // invalidElement.dataset.errorMessage = errorMessage;
         // invalidElement.setAttribute('aria-invalid', isAriaInvalid);
@@ -130,13 +137,11 @@ export default class ValidatorWrapper extends Component {
   }
 
   /**
-   * Recursively collect constraint violation within the given root element
-   *
    * @param {DOMNode} rootElement
-   * @returns {String} error string, empty string (`''`) if no error
+   * @returns {ValidationError}
    */
   _collectConstraintViolation(rootElement) {
-    let elements = rootElement.querySelectorAll('input,select') ?? [
+    const elements = rootElement.querySelectorAll('input,select') ?? [
       rootElement,
     ];
     const error = {};
@@ -161,14 +166,25 @@ export default class ValidatorWrapper extends Component {
     return error;
   }
 
+  /**
+   * @param {DOMNode} element
+   * @memberof ValidatorWrapper
+   */
   _collectInputNames(element) {
     const modelKeys = Object.keys(this.args.model);
-    const inputNames = [...element.querySelectorAll('input,select')].reduce(
+    const inputElements = [...element.querySelectorAll('input,select')];
+    const inputNames = inputElements.reduce(
       (names, element) =>
         names.indexOf(element.name) === -1 ? [...names, element.name] : names,
       []
     );
+
     this.targetInputNames = intersection(modelKeys, inputNames);
+    warn(
+      'Discovered some inputs does not have a `name` attribute, they will be ignored while validating',
+      element.querySelectorAll('input:not([name]),select:not([name])').length,
+      { id: 'ember-form-validation.input-without-name-attr' }
+    );
   }
 
   @action
@@ -183,14 +199,11 @@ export default class ValidatorWrapper extends Component {
   }
 
   /**
-   * Perform a series of form validation, will be invoked by form input field (oninput)
-   *
-   * @param {DOMNode} rootElement - the root element of the input field
-   * @param {array} ...args - the information needed for validation. this part requires a co-op between
-   *   the input component and the custom validator functions
-   * @return {string}
+   * @param {DOMNode} rootElement
+   * @return {ValidationError}
    */
-  @action contextualValidator(rootElement) {
+  @action
+  contextualValidator(rootElement) {
     if (this.hadCustomError) {
       // this is needed for a corner case. assume both constraint and custom validator exists, a
       // node failed on custom validation from the last execution, user fixed it but violate the
@@ -211,7 +224,7 @@ export default class ValidatorWrapper extends Component {
       Object.keys(errorFromConstraintValidation).length;
     if (anyFieldPassedConstraintValidation) {
       error = {
-        ...this._getCustomError(rootElement),
+        ...this._collectCustomViolation(rootElement),
         ...errorFromConstraintValidation,
       };
     } else {

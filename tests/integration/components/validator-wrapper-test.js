@@ -4,7 +4,6 @@ import { click, fillIn, find, render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 
 const LINKEDIN_EMAIL_ERROR = 'LINKEDIN_EMAIL_ERROR';
-const LINKEDIN_URL_ERROR = 'LINKEDIN_URL_ERROR';
 const MS_EMAIL_ERROR = 'MS_EMAIL_ERROR';
 const NOT_EMPTY_ERROR = 'NOT_EMPTY_ERROR';
 
