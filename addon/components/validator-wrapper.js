@@ -1,10 +1,8 @@
 import Component from '@glimmer/component';
 import { action, setProperties } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
+import { intersection } from 'ember-form-validation/utils/array-helpers';
 
-function intersection(arr1, arr2) {
-  return arr1.filter((key) => arr2.includes(key));
-}
 /**
  * The error type will be returned when validate against a component with multiple input fields
  * The structure allow identifying the error message to a specific element based on the `name`
