@@ -1,6 +1,6 @@
 import { module, skip, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { render, find, fillIn, settled } from '@ember/test-helpers';
+import { click, fillIn, find, render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 
 const LINKEDIN_EMAIL_ERROR = 'LINKEDIN_EMAIL_ERROR';
@@ -228,8 +228,14 @@ module('Integration | Component | validator-wrapper', (hooks) => {
 
   test('can handle multiple input', async function (assert) {
     this.model = { email: '', field2: '' };
-    this.customValidator = function customValidator(model) {
-      return { email: 'ok', field2: 'not ok' };
+    this.customValidator = function customValidator({ email, field2 }) {
+      return {
+        email: /invalid/.test(email)
+          ? 'CUSTOM_VALIDATION_ERROR_EMAIL'
+          : undefined,
+        field2:
+          field2 === 'invalid' ? 'CUSTOM_VALIDATION_ERROR_FIELD2' : undefined,
+      };
     };
 
     await render(hbs`
@@ -242,14 +248,14 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         <input
           type="email"
           name="email"
-          data-test-input
+          data-test-email
           value={{this.model.email}}
           onInput={{this.onInput}}
           pattern=".+\.com"
           required
         />
         {{#if v.errorMessage.email}}
-          <p data-test-error>{{v.errorMessage.email}}</p>
+          <p data-test-error-email>{{v.errorMessage.email}}</p>
         {{/if}}
 
         <fieldset name="gender-set" {{on "input" this.onInput2}}>
@@ -257,23 +263,65 @@ module('Integration | Component | validator-wrapper', (hooks) => {
           <label for="field2-bar">bar</label>
           <input id="field2-foo" type="radio" name="field2" value="foo" checked={{eq this.model.field2 "foo"}} required />
           <label for="field2-foo">foo</label>
-          <input id="field2-na" type="radio" name="field2" value="na" checked={{eq this.model.field2 "na"}} required />
-          <label for="field2-na">N/A</label>
+          <input id="field2-invalid" type="radio" name="field2" value="invalid" checked={{eq this.model.field2 "invalid"}} required />
+          <label for="field2-invalid">The wrong one</label>
         </fieldset>
         {{#if v.errorMessage.field2}}
-          <p data-test-error>{{v.errorMessage.field2}}</p>
+          <p data-test-error-field2>{{v.errorMessage.field2}}</p>
         {{/if}}
       </ValidatorWrapper>
     `);
-    await this.pauseTest();
-    assert.ok(1);
+    // 1. eager validation phase
+    assert
+      .dom('[data-test-error-email]')
+      .containsText(
+        'fill',
+        'initial validation applied on email field (constraint validation)'
+      );
+    assert
+      .dom('[data-test-error-field2]')
+      .containsText(
+        'select',
+        'initial validation applied on field2 (constraint validation)'
+      );
+
+    // 2. user input
+    await fillIn('[name="email"]', 'invalid@gmail.com');
+    assert
+      .dom('[data-test-error-email]')
+      .hasText(
+        'CUSTOM_VALIDATION_ERROR_EMAIL',
+        'customValidator triggered on email field after user input'
+      );
+    await click('[name="field2"][value="invalid"]');
+    assert
+      .dom('[data-test-error-field2]')
+      .hasText(
+        'CUSTOM_VALIDATION_ERROR_FIELD2',
+        'customValidator triggered on field2 after user input'
+      );
+
+    // 3. external change
+    this.set('model', { ...this.model, email: 'valid@foo.com' });
+    assert
+      .dom('[data-test-error-email]')
+      .doesNotExist(
+        'validation error removed on email field after external change'
+      );
+    this.set('model', { ...this.model, field2: 'foo' });
+    assert
+      .dom('[data-test-error-field2]')
+      .doesNotExist('validation error removed on field2 after external change');
   });
+
   test('can validate with external prop change', async function (assert) {
     assert.ok(1);
   });
+
   test('can handle async validator', async function (assert) {
     assert.ok(1);
   });
+
   test('constraint validation works when tag name and attr defined case insensitively', async function (assert) {
     this.setProperties({
       type: 'EMAIL',

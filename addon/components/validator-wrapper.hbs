@@ -1,6 +1,6 @@
 <div
   {{did-update this.onReceiveProperties @model}}
-  {{did-insert this.onReceiveProperties @model}}
+  {{did-insert this.onInsert @model}}
   >
   {{yield (hash errorMessage=this.errorMessage)}}
 </div>

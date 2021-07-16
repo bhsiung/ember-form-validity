@@ -1,9 +1,10 @@
 import Component from '@glimmer/component';
-import { action, set } from '@ember/object';
+import { action, setProperties } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
-import { assert } from '@ember/debug';
-import { isEmpty } from '@ember/utils';
 
+function intersection(arr1, arr2) {
+  return arr1.filter((key) => arr2.includes(key));
+}
 /**
  * The error type will be returned when validate against a component with multiple input fields
  * The structure allow identifying the error message to a specific element based on the `name`
@@ -74,12 +75,11 @@ export default class ValidatorWrapper extends Component {
    * @returns {ErrorObject}
    */
   _customValidate() {
-    if (Array.isArray(this._getValidators())) {
-      for (const validator of this._getValidators()) {
-        const result = validator(this.args.model);
+    const validators = this._getValidators();
+    for (const validator of validators) {
+      const result = validator(this.args.model);
 
-        if (result) return result;
-      }
+      if (result) return result;
     }
 
     return null;
@@ -125,14 +125,14 @@ export default class ValidatorWrapper extends Component {
    * @param {Boolean} isAriaInvalid
    */
   _setCustomValidity(rootElement, error, isAriaInvalid) {
-    for (const inputName in this.args.model) {
-      const invalidElement = rootElement.querySelector(`[name=${inputName}]`);
-      if (!invalidElement.setCustomValidity) {
+    for (const inputName of this.targetInputNames) {
+      const inputElement = rootElement.querySelector(`[name=${inputName}]`);
+      if (!inputElement.setCustomValidity) {
         // TODO bear - work on artificial validation later
         // invalidElement.dataset.errorMessage = errorMessage;
         // invalidElement.setAttribute('aria-invalid', isAriaInvalid);
       } else {
-        invalidElement.setCustomValidity(error[inputName] ?? '');
+        inputElement.setCustomValidity(error[inputName] ?? '');
       }
     }
   }
@@ -148,9 +148,9 @@ export default class ValidatorWrapper extends Component {
       rootElement,
     ];
     const error = {};
-    let hasError = false;
     for (const element of elements) {
       if (
+        this.targetInputNames.indexOf(element.name) > -1 &&
         element.validity &&
         !element.validity.customError &&
         !element.validity.valid
@@ -163,16 +163,30 @@ export default class ValidatorWrapper extends Component {
         // TODO bhsiung - support min (rangeUnderflow) & max (rangeOverflow) for type=number
         // TODO bhsiung - support minlength (tooShort) & maxlength (tooLong)
         error[element.name] = element.validationMessage;
-        hasError = true;
       }
     }
 
-    return hasError ? error : undefined;
+    return error;
+  }
+
+  _collectInputNames(element) {
+    const modelKeys = Object.keys(this.args.model);
+    const inputNames = [...element.querySelectorAll('input,select')].reduce(
+      (names, element) =>
+        names.indexOf(element.name) === -1 ? [...names, element.name] : names,
+      []
+    );
+    this.targetInputNames = intersection(modelKeys, inputNames);
   }
 
   @action
   onReceiveProperties(element) {
-    console.log(1233);
+    this.contextualValidator(element);
+  }
+
+  @action
+  onInsert(element) {
+    this._collectInputNames(element);
     this.contextualValidator(element);
   }
 
@@ -197,12 +211,20 @@ export default class ValidatorWrapper extends Component {
       );
     }
 
-    return set(
-      this,
-      'error',
-      this._collectConstraintViolation(rootElement) ??
-        this._getCustomError(rootElement) ??
-        {}
-    );
+    let error = {};
+    const errorFromConstraintValidation =
+      this._collectConstraintViolation(rootElement);
+    const anyFieldPassedConstraintValidation =
+      this.targetInputNames.length >
+      Object.keys(errorFromConstraintValidation).length;
+    if (anyFieldPassedConstraintValidation) {
+      error = {
+        ...this._getCustomError(rootElement),
+        ...errorFromConstraintValidation,
+      };
+    } else {
+      error = errorFromConstraintValidation;
+    }
+    return setProperties(this, { error });
   }
 }
