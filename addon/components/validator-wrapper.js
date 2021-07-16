@@ -156,8 +156,7 @@ export default class ValidatorWrapper extends Component {
   }
 
   @action
-  onUpdate(element) {
-    console.log('update');
+  onReceiveProperties(element) {
     this.inputElement = element.querySelector('input,select');
     assert(
       'more than 2 input elements detected within the component, only the first one will be used for validation',
@@ -167,9 +166,6 @@ export default class ValidatorWrapper extends Component {
     this.contextualValidator(this.inputElement, this.args.value);
   }
 
-  onInsert() {
-    console.log('insert');
-  }
   /**
    * Perform a series of form validation, will be invoked by form input field (oninput)
    *

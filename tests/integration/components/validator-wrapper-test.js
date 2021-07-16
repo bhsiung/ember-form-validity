@@ -52,6 +52,10 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       const element = e.target;
       that.set('value', element.value);
     };
+    this.onInput2 = function (e) {
+      const element = e.target;
+      that.set('value2', element.value);
+    };
   });
   skip('it validates contenteditable field', async function (assert) {
     this.validateNotEmpty = validateNotEmpty;
@@ -79,8 +83,8 @@ module('Integration | Component | validator-wrapper', (hooks) => {
           name="rich-text-editor"
           required=true
         }}
-        {{#if validity.errorMessage}}
-          <p data-test-error>{{validity.errorMessage}}</p>
+        {{#if (get v.errorMessage "rich-text-editor")}}
+          <p data-test-error>{{(get v.errorMessage "simple-email")}}</p>
         {{/if}}
       {{/validator-wrapper}}
     `);
@@ -140,8 +144,8 @@ module('Integration | Component | validator-wrapper', (hooks) => {
           onInput={{fn this.onInput}}
           pattern=".+\.com"
         />
-        {{#if v.errorMessage}}
-          <p data-test-error>{{v.errorMessage}}</p>
+        {{#if (get v.errorMessage "simple-email")}}
+          <p data-test-error>{{(get v.errorMessage "simple-email")}}</p>
         {{/if}}
       {{/validator-wrapper}}
     `);
@@ -237,6 +241,45 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   });
 
   test('can handle multiple input', async function (assert) {
+    this.value = '';
+    this.value2 = '';
+
+    await render(hbs`
+      {{#validator-wrapper
+        validators=(array this.notLinkedinEmail this.notMsEmail)
+        validating=true
+        value=this.value
+        as |v|
+      }}
+        <input
+          type="email"
+          required
+          name="simple-email"
+          data-test-input
+          value={{this.value}}
+          onInput={{fn this.onInput}}
+          pattern=".+\.com"
+        />
+        {{#if (get v.errorMessage "simple-email")}}
+          <p data-test-error>{{(get v.errorMessage "simple-email")}}</p>
+        {{/if}}
+        <fieldset name="gender-set" {{on "input" this.onInput2}}>
+          <input id="field2-bar" type="radio" name="field2" value="bar" checked={{eq value2 "bar"}} required />
+          <label for="field2-bar">bar</label>
+          <input id="field2-foo" type="radio" name="field2" value="foo" checked={{eq value2 "foo"}} required />
+          <label for="field2-foo">foo</label>
+          <input id="field2-na" type="radio" name="field2" value="na" checked={{eq value2 "na"}} required />
+          <label for="gender-na">N/A</label>
+        </fieldset>
+        {{#if (get v.errorMessage "field2")}}
+          <p data-test-error>{{(get v.errorMessage "field2")}}</p>
+        {{/if}}
+      {{/validator-wrapper}}
+    `);
+    await this.pauseTest();
+    assert.ok(1);
+  });
+  test('can validate with external prop change', async function (assert) {
     assert.ok(1);
   });
   test('can handle async validator', async function (assert) {
