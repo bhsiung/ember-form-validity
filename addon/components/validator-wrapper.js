@@ -63,7 +63,7 @@ export default class ValidatorWrapper extends Component {
    * @type {string}
    */
   get errorMessage() {
-    return this.args.validating ? this.error : '';
+    return this.args.validating ? this.error : {};
   }
 
   /**
@@ -74,8 +74,8 @@ export default class ValidatorWrapper extends Component {
    * @returns {ErrorObject}
    */
   _customValidate() {
-    if (Array.isArray(this.args.validators)) {
-      for (const validator of this.args.validators) {
+    if (Array.isArray(this._getValidators())) {
+      for (const validator of this._getValidators()) {
         const result = validator(this.args.model);
 
         if (result) return result;
@@ -83,6 +83,10 @@ export default class ValidatorWrapper extends Component {
     }
 
     return null;
+  }
+
+  _getValidators() {
+    return this.args.validators ?? [this.args.validator];
   }
 
   /**
@@ -96,7 +100,7 @@ export default class ValidatorWrapper extends Component {
    * @returns {string}
    */
   _getCustomError(element) {
-    if (!this.args.validators) return '';
+    if (!this._getValidators()) return undefined;
 
     const error = this._customValidate(element);
 

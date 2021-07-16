@@ -226,41 +226,46 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     );
   });
 
-  skip('can handle multiple input', async function (assert) {
+  test('can handle multiple input', async function (assert) {
     this.model = { email: '', field2: '' };
+    this.customValidator = function customValidator(model) {
+      return { email: 'ok', field2: 'not ok' };
+    };
 
     await render(hbs`
       <ValidatorWrapper
-        @validators={{array this.notLinkedinEmail this.notMsEmail}}
+        @validator={{this.customValidator}}
         @validating={{true}}
         @model={{this.model}}
         as |v|
       >
         <input
           type="email"
-          required
           name="email"
           data-test-input
           value={{this.model.email}}
-          onInput={{fn this.onInput}}
+          onInput={{this.onInput}}
           pattern=".+\.com"
+          required
         />
-        {{#if (get v.errorMessage "simple-email")}}
-          <p data-test-error>{{(get v.errorMessage "simple-email")}}</p>
+        {{#if v.errorMessage.email}}
+          <p data-test-error>{{v.errorMessage.email}}</p>
         {{/if}}
+
         <fieldset name="gender-set" {{on "input" this.onInput2}}>
           <input id="field2-bar" type="radio" name="field2" value="bar" checked={{eq this.model.field2 "bar"}} required />
           <label for="field2-bar">bar</label>
           <input id="field2-foo" type="radio" name="field2" value="foo" checked={{eq this.model.field2 "foo"}} required />
           <label for="field2-foo">foo</label>
           <input id="field2-na" type="radio" name="field2" value="na" checked={{eq this.model.field2 "na"}} required />
-          <label for="gender-na">N/A</label>
+          <label for="field2-na">N/A</label>
         </fieldset>
-        {{#if (get v.errorMessage "field2")}}
-          <p data-test-error>{{(get v.errorMessage "field2")}}</p>
+        {{#if v.errorMessage.field2}}
+          <p data-test-error>{{v.errorMessage.field2}}</p>
         {{/if}}
       </ValidatorWrapper>
     `);
+    await this.pauseTest();
     assert.ok(1);
   });
   test('can validate with external prop change', async function (assert) {
@@ -283,7 +288,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         <input
           type={{this.type}}
           value={{this.model.email}}
-          onInput={{fn this.onInput}}
+          onInput={{this.onInput}}
           required
           data-test-input
           name="email"
