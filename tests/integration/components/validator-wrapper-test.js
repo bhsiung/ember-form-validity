@@ -8,35 +8,22 @@ const LINKEDIN_URL_ERROR = 'LINKEDIN_URL_ERROR';
 const MS_EMAIL_ERROR = 'MS_EMAIL_ERROR';
 const NOT_EMPTY_ERROR = 'NOT_EMPTY_ERROR';
 
-function notLinkedinEmail(value) {
-  return /.+@linkedin\.com$/.test(value) ? LINKEDIN_EMAIL_ERROR : null;
+function notLinkedinEmail(model) {
+  return /.+@linkedin\.com$/.test(model.email)
+    ? { email: LINKEDIN_EMAIL_ERROR }
+    : null;
 }
 
-function notMsEmail(value) {
-  return /.+@microsoft\.com$/.test(value) ? MS_EMAIL_ERROR : null;
+function notMsEmail(model) {
+  return /.+@microsoft\.com$/.test(model.email)
+    ? { email: MS_EMAIL_ERROR }
+    : null;
 }
 
-function validateApplyMethod({ methodType, value }) {
-  if (methodType === 'email' && /^.+@linkedin.com$/.test(value)) {
+function validateNotEmpty(model) {
+  if (model['rich-text-editor'].length === 0) {
     return {
-      name: 'apply-method-value',
-      message: LINKEDIN_EMAIL_ERROR,
-    };
-  } else if (methodType === 'url' && /^.+linkedin.com/.test(value)) {
-    return {
-      name: 'apply-method-value',
-      message: LINKEDIN_URL_ERROR,
-    };
-  }
-
-  return null;
-}
-
-function validateNotEmpty(value) {
-  if (value.length === 0) {
-    return {
-      name: 'rich-text-editor',
-      message: NOT_EMPTY_ERROR,
+      'rich-text-editor': NOT_EMPTY_ERROR,
     };
   }
 
@@ -50,11 +37,11 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     const that = this;
     this.onInput = function (e) {
       const element = e.target;
-      that.set('value', element.value);
+      that.set('model', { ...that.model, email: element.value });
     };
     this.onInput2 = function (e) {
       const element = e.target;
-      that.set('value2', element.value);
+      that.set('model', { ...that.model, field2: element.value });
     };
   });
   skip('it validates contenteditable field', async function (assert) {
@@ -70,14 +57,13 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     };
 
     await render(hbs`
-      {{#validator-wrapper
-        validators=(array this.validateNotEmpty)
-        validating=this.validating
-        value=this.value
+      <ValidatorWrapper
+        @validators={{array this.validateNotEmpty}}
+        @validating={{this.validating}}
+        @model={{this.value}}
         as |validity|
-      }}
-       {{fake-input
-          validating=this.validating
+      >
+        {{fake-input
           onValidate=validity.validator
           value=this.value
           name="rich-text-editor"
@@ -86,7 +72,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         {{#if (get v.errorMessage "rich-text-editor")}}
           <p data-test-error>{{(get v.errorMessage "simple-email")}}</p>
         {{/if}}
-      {{/validator-wrapper}}
+      </ValidatorWrapper>
     `);
 
     assert
@@ -125,29 +111,29 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   test('it validate simple input field', async function (assert) {
     this.notLinkedinEmail = notLinkedinEmail;
     this.notMsEmail = notMsEmail;
-    this.value = '';
+    this.model = { email: '' };
     this.validating = false;
 
     await render(hbs`
-      {{#validator-wrapper
-        validators=(array this.notLinkedinEmail this.notMsEmail)
-        validating=this.validating
-        value=this.value
+      <ValidatorWrapper
+        @validators={{array this.notLinkedinEmail this.notMsEmail}}
+        @validating={{this.validating}}
+        @model={{this.model}}
         as |v|
-      }}
+      >
         <input
           type="email"
           required
-          name="simple-email"
+          name="email"
           data-test-input
-          value={{this.value}}
-          onInput={{fn this.onInput}}
+          value={{this.model.email}}
+          {{on "input" this.onInput}}
           pattern=".+\.com"
         />
-        {{#if (get v.errorMessage "simple-email")}}
-          <p data-test-error>{{(get v.errorMessage "simple-email")}}</p>
+        {{#if v.errorMessage.email}}
+          <p data-test-error>{{v.errorMessage.email}}</p>
         {{/if}}
-      {{/validator-wrapper}}
+      </ValidatorWrapper>
     `);
 
     assert
@@ -226,7 +212,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     );
 
     // invalidate the value from container level
-    this.set('value', '789@linkedin.com');
+    this.set('model', { email: '789@linkedin.com' });
     await settled();
     assert
       .dom('[data-test-error]')
@@ -240,23 +226,22 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     );
   });
 
-  test('can handle multiple input', async function (assert) {
-    this.value = '';
-    this.value2 = '';
+  skip('can handle multiple input', async function (assert) {
+    this.model = { email: '', field2: '' };
 
     await render(hbs`
-      {{#validator-wrapper
-        validators=(array this.notLinkedinEmail this.notMsEmail)
-        validating=true
-        value=this.value
+      <ValidatorWrapper
+        @validators={{array this.notLinkedinEmail this.notMsEmail}}
+        @validating={{true}}
+        @model={{this.model}}
         as |v|
-      }}
+      >
         <input
           type="email"
           required
-          name="simple-email"
+          name="email"
           data-test-input
-          value={{this.value}}
+          value={{this.model.email}}
           onInput={{fn this.onInput}}
           pattern=".+\.com"
         />
@@ -264,19 +249,18 @@ module('Integration | Component | validator-wrapper', (hooks) => {
           <p data-test-error>{{(get v.errorMessage "simple-email")}}</p>
         {{/if}}
         <fieldset name="gender-set" {{on "input" this.onInput2}}>
-          <input id="field2-bar" type="radio" name="field2" value="bar" checked={{eq value2 "bar"}} required />
+          <input id="field2-bar" type="radio" name="field2" value="bar" checked={{eq this.model.field2 "bar"}} required />
           <label for="field2-bar">bar</label>
-          <input id="field2-foo" type="radio" name="field2" value="foo" checked={{eq value2 "foo"}} required />
+          <input id="field2-foo" type="radio" name="field2" value="foo" checked={{eq this.model.field2 "foo"}} required />
           <label for="field2-foo">foo</label>
-          <input id="field2-na" type="radio" name="field2" value="na" checked={{eq value2 "na"}} required />
+          <input id="field2-na" type="radio" name="field2" value="na" checked={{eq this.model.field2 "na"}} required />
           <label for="gender-na">N/A</label>
         </fieldset>
         {{#if (get v.errorMessage "field2")}}
           <p data-test-error>{{(get v.errorMessage "field2")}}</p>
         {{/if}}
-      {{/validator-wrapper}}
+      </ValidatorWrapper>
     `);
-    await this.pauseTest();
     assert.ok(1);
   });
   test('can validate with external prop change', async function (assert) {
@@ -288,26 +272,26 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   test('constraint validation works when tag name and attr defined case insensitively', async function (assert) {
     this.setProperties({
       type: 'EMAIL',
-      value: '',
+      model: { email: '' },
     });
     await render(hbs`
-      {{#validator-wrapper
-        value=this.value
-        validating=true
-        value=this.value
+      <ValidatorWrapper
+        @model={{this.model}}
+        @validating={{true}}
         as |v|
-      }}
+      >
         <input
           type={{this.type}}
-          value={{this.value}}
+          value={{this.model.email}}
           onInput={{fn this.onInput}}
           required
           data-test-input
+          name="email"
         />
         {{#if v.errorMessage}}
-          <p data-test-error>{{v.errorMessage}}</p>
+          <p data-test-error>{{v.errorMessage.email}}</p>
         {{/if}}
-      {{/validator-wrapper}}
+      </ValidatorWrapper>
     `);
 
     assert
