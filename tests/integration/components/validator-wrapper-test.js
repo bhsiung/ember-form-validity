@@ -2,21 +2,24 @@ import { module, skip, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { click, fillIn, find, render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
+import EmberDebugger from '@ember/debug';
+import {
+  MALFORMED_CUSTOM_VALIDATOR_RETURN,
+  VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
+} from 'ember-form-validation/constants/warning-id';
 
-const LINKEDIN_EMAIL_ERROR = 'LINKEDIN_EMAIL_ERROR';
-const MS_EMAIL_ERROR = 'MS_EMAIL_ERROR';
 const NOT_EMPTY_ERROR = 'NOT_EMPTY_ERROR';
 
 function notLinkedinEmail(model) {
   return /.+@linkedin\.com$/.test(model.email)
-    ? { email: LINKEDIN_EMAIL_ERROR }
-    : null;
+    ? { email: 'LINKEDIN_EMAIL_ERROR' }
+    : {};
 }
 
 function notMsEmail(model) {
   return /.+@microsoft\.com$/.test(model.email)
-    ? { email: MS_EMAIL_ERROR }
-    : null;
+    ? { email: 'MS_EMAIL_ERROR' }
+    : {};
 }
 
 function validateNotEmpty(model) {
@@ -26,7 +29,7 @@ function validateNotEmpty(model) {
     };
   }
 
-  return null;
+  return {};
 }
 
 module('Integration | Component | validator-wrapper', (hooks) => {
@@ -162,7 +165,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       );
     assert.notOk(
       find('[data-test-input]').validity.valid,
-      'the input element is invalid due to violate email syntax'
+      'the input element is invalid due to violate [type=email]'
     );
 
     // enter an email violates pattern
@@ -179,32 +182,28 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     assert
       .dom('[data-test-error]')
       .hasText(
-        LINKEDIN_EMAIL_ERROR,
-        'display error message for linkedin email not allowed (custom violation)'
+        'LINKEDIN_EMAIL_ERROR',
+        'display error message when the email address is from linkedin (custom violation)'
       );
-    assert.notOk(
-      find('[data-test-input]').validity.valid,
-      'the input element is invalid due to violate email syntax'
-    );
 
     // enter ms email
     await fillIn('[data-test-input]', '123@microsoft.com');
     assert
       .dom('[data-test-error]')
       .hasText(
-        MS_EMAIL_ERROR,
-        'display error message for microsoft email not allowed (custom violation)'
+        'MS_EMAIL_ERROR',
+        'display error message when the email address is from microsoft (custom violation)'
       );
     assert.notOk(
       find('[data-test-input]').validity.valid,
-      'the input element is invalid due to violate email syntax'
+      'the input element is invalid when the email address is from microsoft (custom violation)'
     );
 
     // enter some other email
     await fillIn('[data-test-input]', '123@gmail.com');
     assert
       .dom('[data-test-error]')
-      .doesNotExist('display no error because it passed the validation');
+      .doesNotExist('display no error when the email is valid');
     assert.ok(
       find('[data-test-input]').validity.valid,
       'the input element is valid'
@@ -216,24 +215,17 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     assert
       .dom('[data-test-error]')
       .hasText(
-        LINKEDIN_EMAIL_ERROR,
-        'display error message for linkedin email not allowed (custom violation)'
+        'LINKEDIN_EMAIL_ERROR',
+        'display error message for linkedin email not allowed (model update)(custom violation)'
       );
-    assert.notOk(
-      find('[data-test-input]').validity.valid,
-      'the input element is invalid due to violate email syntax'
-    );
   });
 
   test('can handle multiple input', async function (assert) {
     this.model = { email: '', field2: '' };
     this.customValidator = function customValidator({ email, field2 }) {
       return {
-        email: /invalid/.test(email)
-          ? 'CUSTOM_VALIDATION_ERROR_EMAIL'
-          : undefined,
-        field2:
-          field2 === 'invalid' ? 'CUSTOM_VALIDATION_ERROR_FIELD2' : undefined,
+        email: /invalid/.test(email) ? 'CUSTOM_VALIDATION_ERROR_EMAIL' : '',
+        field2: field2 === 'invalid' ? 'CUSTOM_VALIDATION_ERROR_FIELD2' : '',
       };
     };
 
@@ -313,8 +305,128 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       .doesNotExist('validation error removed on field2 after external change');
   });
 
-  test('can validate with external prop change', async function (assert) {
-    assert.ok(1);
+  test('it warns when custom validator returns mismatch format', async function (assert) {
+    const warnSpy = sinon.stub(EmberDebugger, 'warn');
+    this.model = { data: 1 };
+    this.customValidator = function customValidator({ data }) {
+      if (data === 1) {
+        return 'error';
+      } else if (data === 2) {
+        return { data: { msg: 'error' } };
+      } else if (data === 3) {
+        return { data: ['error'] };
+      } else if (data === 4) {
+        return { email: 'error' };
+      } else if (data === 5) {
+        return { data: 'error' };
+      }
+      return {};
+    };
+
+    await render(hbs`
+      <ValidatorWrapper
+        @validator={{this.customValidator}}
+        @validating={{true}}
+        @model={{this.model}}
+        as |v|
+      >
+        <input name="data" value={{this.model.data}} />
+        {{#if v.errorMessage.data}}
+          <p data-test-error>{{v.errorMessage.data}}</p>
+        {{/if}}
+      </ValidatorWrapper>
+    `);
+
+    assert.ok(
+      warnSpy.calledWithMatch('error', false, {
+        id: MALFORMED_CUSTOM_VALIDATOR_RETURN,
+      }),
+      'warn for invalid format'
+    );
+    assert.dom('[data-test-error]').doesNotExist();
+    this.set('model', { ...this.model, data: 2 });
+    assert.dom('[data-test-error]').doesNotExist();
+    this.set('model', { ...this.model, data: 3 });
+    assert.dom('[data-test-error]').doesNotExist();
+    this.set('model', { ...this.model, data: 4 });
+    assert.dom('[data-test-error]').doesNotExist();
+    this.set('model', { ...this.model, data: 5 });
+    assert.dom('[data-test-error]').hasText('error');
+    this.set('model', { ...this.model, data: 6 });
+    assert.dom('[data-test-error]').doesNotExist();
+    assert.equal(
+      warnSpy.args.filter((e) => e[2].id === MALFORMED_CUSTOM_VALIDATOR_RETURN)
+        .length,
+      3,
+      'warn for invalid format for 3 times'
+    );
+    assert.equal(
+      warnSpy.args.filter((e) => e[2].id === MALFORMED_CUSTOM_VALIDATOR_RETURN)
+        .length,
+      3,
+      'warn for invalid format for 3 times'
+    );
+    assert.equal(
+      warnSpy.args.filter(
+        (e) => e[2].id === VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME
+      ).length,
+      1,
+      'warn for discrepant key to input name once'
+    );
+  });
+
+  test('can validate when external prop change', async function (assert) {
+    this.model = { email: '', field2: false };
+    this.customValidator = function customValidator({ email, field2 }) {
+      if (/invalid/.test(email)) {
+        return { email: 'CUSTOM_VALIDATION_ERROR_EMAIL1' };
+      } else if (!field2) {
+        return { email: 'CUSTOM_VALIDATION_ERROR_EMAIL2' };
+      }
+    };
+
+    await render(hbs`
+      <ValidatorWrapper
+        @validator={{this.customValidator}}
+        @validating={{true}}
+        @model={{this.model}}
+        as |v|
+      >
+        <input
+          name="email"
+          data-test-email
+          value={{this.model.email}}
+          onInput={{this.onInput}}
+          required
+        />
+        {{#if v.errorMessage.email}}
+          <p data-test-error-email>{{v.errorMessage.email}}</p>
+        {{/if}}
+      </ValidatorWrapper>
+    `);
+
+    assert
+      .dom('[data-test-error-email]')
+      .exists('expect the initial error message from `required` attribute');
+    await fillIn('[name="email"]', 'invalid');
+    assert
+      .dom('[data-test-error-email]')
+      .hasText(
+        'CUSTOM_VALIDATION_ERROR_EMAIL1',
+        'customValidator triggered on email field after user input'
+      );
+
+    this.set('model', { ...this.model, email: 'valid' });
+    assert
+      .dom('[data-test-error-email]')
+      .hasText(
+        'CUSTOM_VALIDATION_ERROR_EMAIL2',
+        'second customValidator triggered'
+      );
+    this.set('model', { ...this.model, field2: true });
+    assert
+      .dom('[data-test-error-email]')
+      .doesNotExist('validation error removed');
   });
 
   test('can handle async validator', async function (assert) {

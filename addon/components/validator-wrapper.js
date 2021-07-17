@@ -3,6 +3,16 @@ import { action, setProperties } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
 import { intersection } from 'ember-form-validation/utils/array-helpers';
 import { warn } from '@ember/debug';
+import {
+  FORM_ELEMENT_WITHOUT_NAME_ATTR,
+  MALFORMED_CUSTOM_VALIDATOR_RETURN,
+  VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
+} from 'ember-form-validation/constants/warning-id';
+import {
+  isEmptyValidationError,
+  isValidValidationError,
+  isValidationKeyMatch,
+} from 'ember-form-validation/utils/validate-error';
 
 /**
  * The structured error message will be used to print the error message, using
@@ -87,7 +97,19 @@ export default class ValidatorWrapper extends Component {
   _customValidate() {
     for (const validator of this.validators) {
       const result = validator(this.args.model);
-      if (result) return result;
+      if (!isValidValidationError(result)) {
+        warn(
+          'The error result need to conform the key-value pair format. e.g { "input-name": "error message" }',
+          false,
+          { id: MALFORMED_CUSTOM_VALIDATOR_RETURN }
+        );
+      } else if (!isValidationKeyMatch(result, this.targetInputNames)) {
+        warn('The error key mismatches the input element name', false, {
+          id: VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
+        });
+      } else if (!isEmptyValidationError(result)) {
+        return result;
+      }
     }
     return {};
   }
@@ -180,10 +202,11 @@ export default class ValidatorWrapper extends Component {
     );
 
     this.targetInputNames = intersection(modelKeys, inputNames);
+    // TODO @bear - add test coverage
     warn(
       'Discovered some inputs does not have a `name` attribute, they will be ignored while validating',
       !element.querySelectorAll('input:not([name]),select:not([name])').length,
-      { id: 'ember-form-validation.input-without-name-attr' }
+      { id: FORM_ELEMENT_WITHOUT_NAME_ATTR }
     );
   }
 
