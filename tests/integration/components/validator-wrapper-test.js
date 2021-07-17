@@ -47,6 +47,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     };
   });
   skip('it validates contenteditable field', async function (assert) {
+    // TODO bear
     this.validateNotEmpty = validateNotEmpty;
     this.value = '';
     this.validating = false;
@@ -430,6 +431,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   });
 
   test('can handle async validator', async function (assert) {
+    // TODO bear
     assert.ok(1);
   });
 
