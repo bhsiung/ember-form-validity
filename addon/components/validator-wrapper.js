@@ -97,7 +97,6 @@ export default class ValidatorWrapper extends Component {
   _customValidate() {
     for (const validator of this.validators) {
       const result = validator(this.args.model);
-      // TODO @bear add warning if the returned error key mismatch with targetInputNames
       if (!isValidValidationError(result)) {
         warn(
           'The error result need to conform the key-value pair format. e.g { "input-name": "error message" }',
