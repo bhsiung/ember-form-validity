@@ -41,6 +41,7 @@ import { isEmpty } from '@ember/utils';
  * @param {ModelForValidation} model - immutable model to be used for validation
  * @param {CustomValidatorCallback[]} [validators] - a set of validator to be test against
  * @param {Function} [onWrapperValidate] - trigger and report the validation result to the container
+ * @param {Function} [registerId] - assigned an ID from the container for tracking
  *
  * yield properties
  * @param {ValidationError} errorMessage
@@ -49,6 +50,8 @@ import { isEmpty } from '@ember/utils';
  * <ValidatorWrapper
  *   @validator={{this.notLinkedinEmail}}
  *   @validating={{this.validating}}
+ *   @onWrapperValidate={{this.onWrapperValidate}}
+ *   @registerId={{this.registerId}}
  *   @model={{hash email=this.email}}
  *   as |v|
  * >
@@ -89,7 +92,9 @@ export default class ValidatorWrapper extends Component {
    * @type {Function[]}
    */
   get validators() {
-    return this.args.validators ?? this.args.validator ? [this.args.validator] : [];
+    return (
+      this.args.validators ?? (this.args.validator ? [this.args.validator] : [])
+    );
   }
 
   constructor() {
@@ -192,6 +197,12 @@ export default class ValidatorWrapper extends Component {
       }
     }
 
+    if (this.args.onWrapperValidate)
+      this.args.onWrapperValidate(
+        this.wrapperId,
+        isEmptyValidationError(error)
+      );
+
     return error;
   }
 
@@ -224,6 +235,9 @@ export default class ValidatorWrapper extends Component {
 
   @action
   onInsert(element) {
+    if (typeof this.args.registerId === 'function') {
+      this.wrapperId = this.args.registerId();
+    }
     this._collectInputNames(element);
     this.contextualValidator(element);
   }
