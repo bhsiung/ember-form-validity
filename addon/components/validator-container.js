@@ -1,6 +1,5 @@
-import { setProperties } from '@ember/object';
-import Component from '@ember/component';
-import layout from 'ember-form-validation/components/validator-container';
+import { action, setProperties } from '@ember/object';
+import Component from '@glimmer/component';
 
 /**
  * The container of the form to be validated, maintain the validation result map
@@ -13,25 +12,42 @@ import layout from 'ember-form-validation/components/validator-container';
  * @param {boolean} isValid - True if everything on the form is valid
  * @param {boolean} validating - A boolean to determine if validation mode is active or not, this reflect the current validating status
  */
-export default Component.extend({
-  layout,
-  validating: false,
-  isValid: true,
-  actions: {
-    checkForm(saveForm, event) {
-      event.preventDefault();
+export default class ValidatorContainer extends Component {
+  validating = false;
+  wrapperMap = {};
 
-      const invalidSelector = 'form :invalid, form [aria-invalid="true"]';
-      const isValid = !this.element.querySelector(invalidSelector);
+  get isValid() {
+    for (const key in this.wrapperMap) {
+      if (!this.wrapperMap[key]) return false;
+    }
+    return true;
+  }
 
-      setProperties(this, { isValid, validating: true });
-      if (!isValid) {
-        this.element.querySelector(invalidSelector).focus();
-      }
+  constructor() {
+    super(...arguments);
+    this.validating = this.args.validating;
+  }
 
-      if (isValid) {
-        saveForm();
-      }
-    },
-  },
-});
+  @action
+  registerElement(element) {
+    this.element = element;
+  }
+
+  @action
+  onWrapperValidate(id, isValid) {
+    this.wrapperMap[id] = isValid;
+  }
+
+  @action
+  checkForm(saveForm, event) {
+    event.preventDefault();
+    const invalidSelector = ':invalid,[aria-invalid="true"]';
+
+    setProperties(this, { validating: true });
+    if (this.isValid) {
+      saveForm();
+    } else {
+      this.element.querySelector(invalidSelector).focus();
+    }
+  }
+}

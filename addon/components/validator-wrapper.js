@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import { action, setProperties } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
 import { intersection } from 'ember-form-validation/utils/array-helpers';
-import { warn } from '@ember/debug';
+import { assert, warn } from '@ember/debug';
 import {
   FORM_ELEMENT_WITHOUT_NAME_ATTR,
   MALFORMED_CUSTOM_VALIDATOR_RETURN,
@@ -13,6 +13,7 @@ import {
   isValidValidationError,
   isValidationKeyMatch,
 } from 'ember-form-validation/utils/validate-error';
+import { isEmpty } from '@ember/utils';
 
 /**
  * The structured error message will be used to print the error message, using
@@ -39,7 +40,7 @@ import {
  * @param {boolean} validating - determine if the form is in validating mode
  * @param {ModelForValidation} model - immutable model to be used for validation
  * @param {CustomValidatorCallback[]} [validators] - a set of validator to be test against
- * @param {CustomValidatorCallback[]} [validator] - single custom validator to be test against
+ * @param {Function} [onWrapperValidate] - trigger and report the validation result to the container
  *
  * yield properties
  * @param {ValidationError} errorMessage
@@ -48,7 +49,7 @@ import {
  * <ValidatorWrapper
  *   @validator={{this.notLinkedinEmail}}
  *   @validating={{this.validating}}
- *   @model={{this.model}}
+ *   @model={{hash email=this.email}}
  *   as |v|
  * >
  *   <input
@@ -88,7 +89,13 @@ export default class ValidatorWrapper extends Component {
    * @type {Function[]}
    */
   get validators() {
-    return this.args.validators ?? [this.args.validator];
+    return this.args.validators ?? this.args.validator ? [this.args.validator] : [];
+  }
+
+  constructor() {
+    super(...arguments);
+    if (isEmpty(this.args.model))
+      throw new Error('model prop is required for validator wrapper');
   }
 
   /**

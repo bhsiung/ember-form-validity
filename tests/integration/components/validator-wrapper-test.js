@@ -45,7 +45,9 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       const element = e.target;
       that.set('model', { ...that.model, field2: element.value });
     };
+    this.onWrapperValidate = sinon.stub();
   });
+
   skip('it validates contenteditable field', async function (assert) {
     // TODO bear
     this.validateNotEmpty = validateNotEmpty;
@@ -122,6 +124,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         @validators={{array this.notLinkedinEmail this.notMsEmail}}
         @validating={{this.validating}}
         @model={{this.model}}
+        @onWrapperValidate={{this.onWrapperValidate}}
         as |v|
       >
         <input
