@@ -13,9 +13,7 @@ module('Integration | Component | shared/validator-container', (hooks) => {
 
   test('it renders', async function (assert) {
     await render(hbs`
-      <ValidatorContainer
-        @validating={{true}}
-        as |v|>
+      <ValidatorContainer @validating={{false}} as |v|>
 				{{#unless v.isValid}}
 					<p data-test-global-error>something wrong</p>
 				{{/unless}}
@@ -33,9 +31,7 @@ module('Integration | Component | shared/validator-container', (hooks) => {
     };
 
     await render(hbs`
-      <ValidatorContainer
-        @validating={{true}}
-        as |v|>
+      <ValidatorContainer @validating={{true}} as |v|>
         {{#unless v.isValid}}
           <p data-test-global-error>something wrong</p>
         {{/unless}}
@@ -53,7 +49,6 @@ module('Integration | Component | shared/validator-container', (hooks) => {
       </ValidatorContainer>
   `);
 
-    await this.pauseTest()
     assert
       .dom('[data-test-validator-container]')
       .exists('global error message displayed due to error in the form');
@@ -65,88 +60,95 @@ module('Integration | Component | shared/validator-container', (hooks) => {
       .exists('required field validation error (constraint validation)');
   });
 
-  // skip('it can validate form when validating = false by default', async function (assert) {
-  // this.applyMethod = { methodType: 'url', value: `/talent/post-a-job` };
-  // this.validateApplyMethod = validateApplyMethod;
-  // this.notLinkedinEmail = notLinkedinEmail;
-  // this.notMsEmail = notMsEmail;
-  // this.emailValue = 'bear@linkedin.com';
+  test('it can validate form when validating = false by default', async function (assert) {
+    this.validator = ({ field1, field2 }) => {
+      return {
+        field1: field1 % 2 === 0,
+        field2: field2 % 2 === 1,
+      };
+    };
+    this.model = { field1: '', field2: '' };
+    this.onInput1 = (e) => {
+      this.set('model', { ...this.model, field1: e.target.value });
+    };
+    this.onInput2 = (e) => {
+      this.set('model', { ...this.model, field2: e.target.value });
+    };
 
-  // await render(hbs`
-  // {{#ember-ts-job-posting$shared/validator-container
-  // validating=false
-  // as |v|
-  // }}
-  // {{#unless v.isValid}}
-  // <p data-test-global-error>something wrong</p>
-  // {{/unless}}
+    await render(hbs`
+      <ValidatorContainer @validating={{false}} as |v|>
+        {{#unless v.isValid}}
+          <p data-test-global-error>something wrong</p>
+        {{/unless}}
 
-  // {{#v.validity
-  // validators=(array this.notLinkedinEmail this.notMsEmail)
-  // as |validity|
-  // }}
-  // {{simple-email-field
-  // required=true
-  // value=this.emailValue
-  // name="simple-email"
-  // onValidate=validity.validator
-  // }}
-  // {{#if validity.errorMessage}}
-  // <p id="abc3" data-test-error="simple-email">{{validity.errorMessage}}</p>
-  // {{/if}}
-  // {{/v.validity}}
+        <v.validity
+          @model={{hash field1=this.model.field1}}
+          @validators={{this.validator}}
+          as |validity|>
+          <input
+            required
+            value={{this.model.field1}}
+            name="field1"
+            {{on "input" this.onInput1}}
+          }}
+          {{#if validity.errorMessage.field1}}
+            <p data-test-error="field1">{{validity.errorMessage.field1}}</p>
+          {{/if}}
+        {{/v.validity}}
 
-  // {{#v.validity
-  // validators=(array this.validateApplyMethod)
-  // as |validity|
-  // }}
-  // {{complex-input-field
-  // applyMethod=this.applyMethod
-  // describedById="abc3"
-  // validating=v.validating
-  // required=true
-  // onValidate=validity.validator
-  // }}
-  // {{#if validity.errorMessage}}
-  // <p id="abc3" data-test-error="apply-method">{{validity.errorMessage}}</p>
-  // {{/if}}
-  // {{/v.validity}}
+        <v.validity
+          @model={{hash field2=this.model.field2}}
+          @validators={{this.validator}}
+          as |validity|>
+          <input
+            required
+            value={{this.model.field2}}
+            name="field2"
+            {{on "input" this.onInput2}}
+          }}
+          {{#if validity.errorMessage.field2}}
+            <p data-test-error="field2">{{validity.errorMessage.field2}}</p>
+          {{/if}}
+        {{/v.validity}}
 
-  // <button onClick={{action v.checkForm this.onSubmit}} data-test-submit>continue</button>
-  // {{/ember-ts-job-posting$shared/validator-container}}
-  // `);
+        <button data-test-cta {{on "click" (fn v.checkForm this.onSubmit)}}>save</button>
+      {{/ember-ts-job-posting$shared/validator-container}}
+  `);
 
-  // assert.dom('[data-test-validator-container]').exists();
-  // assert
-  // .dom('[data-test-error]')
-  // .doesNotExist('No error displayed since validating is false');
+    assert
+      .dom('[data-test-error]')
+      .doesNotExist('No error displayed since validating is false');
+    assert
+      .dom('[data-test-global-error]')
+      .doesNotExist('No error displayed since validating is false');
 
-  // await click('[data-test-submit]');
-  // assert
-  // .dom('[data-test-global-error]')
-  // .hasText('something wrong', 'global error should be rendered');
-  // assert.dom('[data-test-error="apply-method"]').hasText(LINKEDIN_URL_ERROR);
-  // assert
-  // .dom('[data-test-error="simple-email"]')
-  // .hasText(LINKEDIN_EMAIL_ERROR);
-  // assert
-  // .dom('input[name="simple-email"]')
-  // .isFocused('the first invalid element should be focused');
-  // assert.notOk(
-  // this.onSubmit.called,
-  // 'submit callback stopped because form validation failed'
-  // );
+    await click('[data-test-cta]');
 
-  // // fix everything
-  // await fillIn('input[name="apply-method-value"]', 'https://www.google.com');
-  // assert.dom('[data-test-error="apply-method"]').doesNotExist();
-  // await fillIn('input[name="simple-email"]', 'bear@gmail.com');
-  // assert.dom('[data-test-error="simple-email"]').doesNotExist();
+    assert
+      .dom('[data-test-global-error]')
+      .exits('global error should be rendered');
+    // assert.dom('[data-test-error="apply-method"]').hasText(LINKEDIN_URL_ERROR);
+    // assert
+      // .dom('[data-test-error="simple-email"]')
+      // .hasText(LINKEDIN_EMAIL_ERROR);
+    // assert
+      // .dom('input[name="simple-email"]')
+      // .isFocused('the first invalid element should be focused');
+    // assert.notOk(
+      // this.onSubmit.called,
+      // 'submit callback stopped because form validation failed'
+    // );
 
-  // await click('[data-test-submit]');
-  // assert.ok(
-  // this.onSubmit.called,
-  // 'submit callback went thru because form validation passed'
-  // );
-  // });
+    // // fix everything
+    // await fillIn('input[name="apply-method-value"]', 'https://www.google.com');
+    // assert.dom('[data-test-error="apply-method"]').doesNotExist();
+    // await fillIn('input[name="simple-email"]', 'bear@gmail.com');
+    // assert.dom('[data-test-error="simple-email"]').doesNotExist();
+
+    // await click('[data-test-submit]');
+    // assert.ok(
+      // this.onSubmit.called,
+      // 'submit callback went thru because form validation passed'
+    // );
+  });
 });

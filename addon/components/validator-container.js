@@ -1,5 +1,6 @@
 import { action, setProperties } from '@ember/object';
 import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
 
 /**
  * The container of the form to be validated, maintain the validation result map
@@ -13,19 +14,26 @@ import Component from '@glimmer/component';
  * @param {boolean} validating - A boolean to determine if validation mode is active or not, this reflect the current validating status
  */
 export default class ValidatorContainer extends Component {
+  @tracked isValid = true;
   validating = false;
   wrapperMap = {};
+  wrapperCounter = 0;
 
-  get isValid() {
+  constructor() {
+    super(...arguments);
+    this.validating = this.args.validating;
+  }
+
+  validateWrappers() {
     for (const key in this.wrapperMap) {
       if (!this.wrapperMap[key]) return false;
     }
     return true;
   }
 
-  constructor() {
-    super(...arguments);
-    this.validating = this.args.validating;
+  @action
+  registerId() {
+    return this.wrapperCounter++;
   }
 
   @action
@@ -36,6 +44,7 @@ export default class ValidatorContainer extends Component {
   @action
   onWrapperValidate(id, isValid) {
     this.wrapperMap[id] = isValid;
+    this.isValid = this.validateWrappers();
   }
 
   @action
