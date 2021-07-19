@@ -197,12 +197,6 @@ export default class ValidatorWrapper extends Component {
       }
     }
 
-    if (this.args.onWrapperValidate)
-      this.args.onWrapperValidate(
-        this.wrapperId,
-        isEmptyValidationError(error)
-      );
-
     return error;
   }
 
@@ -274,6 +268,14 @@ export default class ValidatorWrapper extends Component {
     } else {
       error = errorFromConstraintValidation;
     }
+
+    if (this.args.onWrapperValidate) {
+      this.args.onWrapperValidate(
+        this.wrapperId,
+        isEmptyValidationError(error)
+      );
+    }
+
     return setProperties(this, { error });
   }
 }

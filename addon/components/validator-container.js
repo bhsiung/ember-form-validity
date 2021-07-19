@@ -25,6 +25,7 @@ export default class ValidatorContainer extends Component {
   }
 
   validateWrappers() {
+    if (!this.validating) return true;
     for (const key in this.wrapperMap) {
       if (!this.wrapperMap[key]) return false;
     }
@@ -53,8 +54,9 @@ export default class ValidatorContainer extends Component {
     const invalidSelector = ':invalid,[aria-invalid="true"]';
 
     setProperties(this, { validating: true });
+    this.isValid = this.validateWrappers();
     if (this.isValid) {
-      saveForm();
+      saveForm(event);
     } else {
       this.element.querySelector(invalidSelector).focus();
     }
