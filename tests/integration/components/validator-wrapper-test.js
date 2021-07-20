@@ -3,6 +3,7 @@ import { setupRenderingTest } from 'ember-qunit';
 import { click, fillIn, find, render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 import EmberDebugger from '@ember/debug';
+import sinon from 'sinon';
 import {
   MALFORMED_CUSTOM_VALIDATOR_RETURN,
   VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,

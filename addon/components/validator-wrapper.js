@@ -2,7 +2,7 @@ import Component from '@glimmer/component';
 import { action, setProperties } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
 import { intersection } from 'ember-form-validation/utils/array-helpers';
-import { assert, warn } from '@ember/debug';
+import { warn } from '@ember/debug';
 import {
   FORM_ELEMENT_WITHOUT_NAME_ATTR,
   MALFORMED_CUSTOM_VALIDATOR_RETURN,
