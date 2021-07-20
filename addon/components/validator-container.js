@@ -1,6 +1,6 @@
-import { setProperties } from '@ember/object';
-import Component from '@ember/component';
-import layout from 'ember-form-validation/components/validator-container';
+import { action, setProperties } from '@ember/object';
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
 
 /**
  * The container of the form to be validated, maintain the validation result map
@@ -13,25 +13,52 @@ import layout from 'ember-form-validation/components/validator-container';
  * @param {boolean} isValid - True if everything on the form is valid
  * @param {boolean} validating - A boolean to determine if validation mode is active or not, this reflect the current validating status
  */
-export default Component.extend({
-  layout,
-  validating: false,
-  isValid: true,
-  actions: {
-    checkForm(saveForm, event) {
-      event.preventDefault();
+export default class ValidatorContainer extends Component {
+  @tracked isValid = true;
+  validating = false;
+  wrapperMap = {};
+  wrapperCounter = 0;
 
-      const invalidSelector = 'form :invalid, form [aria-invalid="true"]';
-      const isValid = !this.element.querySelector(invalidSelector);
+  constructor() {
+    super(...arguments);
+    this.validating = this.args.validating;
+  }
 
-      setProperties(this, { isValid, validating: true });
-      if (!isValid) {
-        this.element.querySelector(invalidSelector).focus();
-      }
+  validateWrappers() {
+    if (!this.validating) return true;
+    for (const key in this.wrapperMap) {
+      if (!this.wrapperMap[key]) return false;
+    }
+    return true;
+  }
 
-      if (isValid) {
-        saveForm();
-      }
-    },
-  },
-});
+  @action
+  registerId() {
+    return this.wrapperCounter++;
+  }
+
+  @action
+  registerElement(element) {
+    this.element = element;
+  }
+
+  @action
+  onWrapperValidate(id, isValid) {
+    this.wrapperMap[id] = isValid;
+    this.isValid = this.validateWrappers();
+  }
+
+  @action
+  checkForm(saveForm, event) {
+    event.preventDefault();
+    const invalidSelector = ':invalid,[aria-invalid="true"]';
+
+    setProperties(this, { validating: true });
+    this.isValid = this.validateWrappers();
+    if (this.isValid) {
+      saveForm(event);
+    } else {
+      this.element.querySelector(invalidSelector).focus();
+    }
+  }
+}

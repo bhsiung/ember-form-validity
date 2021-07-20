@@ -3,6 +3,7 @@ import { setupRenderingTest } from 'ember-qunit';
 import { click, fillIn, find, render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 import EmberDebugger from '@ember/debug';
+import sinon from 'sinon';
 import {
   MALFORMED_CUSTOM_VALIDATOR_RETURN,
   VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
@@ -45,8 +46,11 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       const element = e.target;
       that.set('model', { ...that.model, field2: element.value });
     };
+    this.onWrapperValidate = sinon.stub();
   });
+
   skip('it validates contenteditable field', async function (assert) {
+    // TODO bear
     this.validateNotEmpty = validateNotEmpty;
     this.value = '';
     this.validating = false;
@@ -111,6 +115,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   });
 
   test('it validate simple input field', async function (assert) {
+    this.registerId = sinon.stub().returns(1);
     this.notLinkedinEmail = notLinkedinEmail;
     this.notMsEmail = notMsEmail;
     this.model = { email: '' };
@@ -121,8 +126,9 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         @validators={{array this.notLinkedinEmail this.notMsEmail}}
         @validating={{this.validating}}
         @model={{this.model}}
-        as |v|
-      >
+        @onWrapperValidate={{this.onWrapperValidate}}
+        @registerId={{this.registerId}}
+        as |v|>
         <input
           type="email"
           required
@@ -144,6 +150,10 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     assert.notOk(
       find('[data-test-input]').validity.valid,
       'the input element is invalid due to no value on a required field'
+    );
+    assert.ok(
+      this.onWrapperValidate.calledWithExactly(1, false),
+      'the validation failure event has been delegate to the container level'
     );
 
     // set validating to true
@@ -208,6 +218,10 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       find('[data-test-input]').validity.valid,
       'the input element is valid'
     );
+    assert.ok(
+      this.onWrapperValidate.calledWithExactly(1, true),
+      'the validation success event has been delegate to the container level'
+    );
 
     // invalidate the value from container level
     this.set('model', { email: '789@linkedin.com' });
@@ -218,6 +232,11 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         'LINKEDIN_EMAIL_ERROR',
         'display error message for linkedin email not allowed (model update)(custom violation)'
       );
+    assert.equal(
+      this.onWrapperValidate.args.length,
+      7,
+      'validation has been called 7 times'
+    );
   });
 
   test('can handle multiple input', async function (assert) {
@@ -430,6 +449,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   });
 
   test('can handle async validator', async function (assert) {
+    // TODO bear
     assert.ok(1);
   });
 
