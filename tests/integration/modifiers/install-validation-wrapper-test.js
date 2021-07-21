@@ -13,7 +13,7 @@ module('Integration | Modifier | install-validation-wrapper', function (hooks) {
     this.onUpdate = sinon.stub();
     this.model = {};
     await render(
-      hbs`<div data-test-element {{install-validation-wrapper this.onInsert this.onUpdate this.model}}></div>`
+      hbs`<div data-test-element {{install-validation-wrapper this.model onInsert=this.onInsert onUpdate=this.onUpdate}}></div>`
     );
     const element = document.querySelector('[data-test-element]');
 
@@ -22,17 +22,13 @@ module('Integration | Modifier | install-validation-wrapper', function (hooks) {
       this.onInsert.calledWithExactly(element),
       'onInsert called with proper params after installation'
     );
-    assert.ok(this.onUpdate.calledOnce, 'onUpdate called after installation');
-    assert.ok(
-      this.onUpdate.calledWithExactly(element, this.model),
-      'update gets called with the proper parameters after installation'
+    assert.notOk(
+      this.onUpdate.calledOnce,
+      'onUpdate is not called after installation'
     );
     this.set('model', { foo: 'bar' });
     assert.ok(this.onInsert.calledOnce, 'onInsert is not invoked on update');
-    assert.ok(
-      this.onUpdate.calledTwice,
-      'onUpdate is called once after change'
-    );
+    assert.ok(this.onUpdate.calledOnce, 'onUpdate is called once after change');
     assert.ok(
       this.onUpdate.calledWithExactly(element, this.model),
       'update gets called with the proper parameters'

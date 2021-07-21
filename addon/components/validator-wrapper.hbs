@@ -1,3 +1,3 @@
-<div {{install-validation-wrapper this.onInsert this.onReceiveProperties @model}}>
+<div {{install-validation-wrapper @model onInsert=this.onInsert onUpdate=this.onReceiveProperties}}>
   {{yield (hash errorMessage=this.errorMessage)}}
 </div>
