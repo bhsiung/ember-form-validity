@@ -4,7 +4,7 @@ import { fillIn, click, render } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 
-module('Integration | Component | shared/validator-container', (hooks) => {
+module('Integration | Component | validator-container', (hooks) => {
   setupRenderingTest(hooks);
 
   hooks.beforeEach(function () {
