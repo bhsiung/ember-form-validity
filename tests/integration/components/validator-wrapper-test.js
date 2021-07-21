@@ -252,7 +252,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       <ValidatorWrapper
         @validator={{this.customValidator}}
         @validating={{true}}
-        @model={{this.model}}
+        @model={{hash email=this.model.email field2=this.model.field2}}
         as |v|
       >
         <input
