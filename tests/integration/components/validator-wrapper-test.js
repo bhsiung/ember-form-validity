@@ -8,6 +8,7 @@ import {
   MALFORMED_CUSTOM_VALIDATOR_RETURN,
   VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
 } from 'ember-form-validation/constants/warning-id';
+import { defer } from 'rsvp';
 
 const NOT_EMPTY_ERROR = 'NOT_EMPTY_ERROR';
 
@@ -449,8 +450,51 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   });
 
   test('can handle async validator', async function (assert) {
-    // TODO bear
-    assert.ok(1);
+    const deferred = defer();
+    this.model = { email: 'invalid@gmail.com' };
+    this.customValidator = async function customValidator({ email }) {
+      await deferred.promise;
+      if (/invalid/.test(email)) {
+        return { email: 'ASYNC_VALIDATION_ERROR' };
+      }
+      return { email: '' };
+    };
+
+    await render(hbs`
+      <ValidatorWrapper
+        @validator={{this.customValidator}}
+        @validating={{true}}
+        @model={{this.model}}
+        as |v|
+      >
+        <input
+          name="email"
+          data-test-email
+          value={{this.model.email}}
+          onInput={{this.onInput}}
+          required
+        />
+        {{#if v.loading}}
+          <p data-test-loading>loading for validation</p>
+        {{else if v.errorMessage.email}}
+          <p data-test-error>{{v.errorMessage.email}}</p>
+        {{/if}}
+      </ValidatorWrapper>
+    `);
+    assert
+      .dom('[data-test-error]')
+      .doesNotExist('error should be hidden while loading');
+    assert
+      .dom('[data-test-loading]')
+      .exists('validation loading indicator should be appear while loading');
+
+    deferred.resolve();
+    assert
+      .dom('[data-test-error]')
+      .exists('error unfold when validation resolve');
+    assert
+      .dom('[data-test-loading]')
+      .doesNotExist('validation loading is hidden');
   });
 
   test('constraint validation works when tag name and attr defined case insensitively', async function (assert) {
