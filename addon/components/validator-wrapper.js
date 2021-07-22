@@ -80,7 +80,7 @@ export default class ValidatorWrapper extends Component {
    * A flag to indicate if the wrapper is currently loading async validation
    * @type {boolean}
    */
-  loading = false;
+  @tracked loading = false;
 
   /**
    * proxied error message based on the `validating` flag
@@ -116,6 +116,7 @@ export default class ValidatorWrapper extends Component {
     this.loading = true;
     for (const validator of this.validators) {
       const result = await validator(this.args.model);
+      if (this.isDestroyed || this.isDestroyed) return {};
       if (!isValidValidationError(result)) {
         warn(
           'The error result need to conform the key-value pair format. e.g { "input-name": "error message" }',
@@ -143,18 +144,11 @@ export default class ValidatorWrapper extends Component {
     if (this.validators.length === 0) return {};
 
     const error = await this._customValidate(element);
+    if (this.isDestroyed || this.isDestroyed) return {};
+    this._setCustomValidity(element, error, /** isAriaInvalid*/ true);
+    this.hadCustomError = true;
 
-    if (!error) {
-      this.hadCustomError = false;
-      return {};
-    } else if (typeof error === 'object') {
-      this._setCustomValidity(element, error, /** isAriaInvalid*/ true);
-      this.hadCustomError = true;
-
-      return error;
-    }
-
-    return {};
+    return error;
   }
 
   /**
@@ -274,6 +268,7 @@ export default class ValidatorWrapper extends Component {
         ...(await this._collectCustomViolation(rootElement)),
         ...errorFromConstraintValidation,
       };
+      if (this.isDestroyed || this.isDestroyed) return;
     } else {
       error = errorFromConstraintValidation;
     }
