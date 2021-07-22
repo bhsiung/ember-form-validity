@@ -8,6 +8,7 @@ import {
   MALFORMED_CUSTOM_VALIDATOR_RETURN,
   VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
 } from 'ember-form-validation/constants/warning-id';
+import { defer } from 'rsvp';
 
 const NOT_EMPTY_ERROR = 'NOT_EMPTY_ERROR';
 
@@ -40,11 +41,11 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     const that = this;
     this.onInput = function (e) {
       const element = e.target;
-      that.set('model', { ...that.model, email: element.value });
+      that.set('model.email', element.value);
     };
     this.onInput2 = function (e) {
       const element = e.target;
-      that.set('model', { ...that.model, field2: element.value });
+      that.set('model.field2', element.value);
     };
     this.onWrapperValidate = sinon.stub();
   });
@@ -125,7 +126,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       <ValidatorWrapper
         @validators={{array this.notLinkedinEmail this.notMsEmail}}
         @validating={{this.validating}}
-        @model={{this.model}}
+        @model={{hash email=this.model.email}}
         @onWrapperValidate={{this.onWrapperValidate}}
         @registerId={{this.registerId}}
         as |v|>
@@ -313,12 +314,14 @@ module('Integration | Component | validator-wrapper', (hooks) => {
 
     // 3. external change
     this.set('model', { ...this.model, email: 'valid@foo.com' });
+    await settled();
     assert
       .dom('[data-test-error-email]')
       .doesNotExist(
         'validation error removed on email field after external change'
       );
     this.set('model', { ...this.model, field2: 'foo' });
+    await settled();
     assert
       .dom('[data-test-error-field2]')
       .doesNotExist('validation error removed on field2 after external change');
@@ -346,7 +349,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       <ValidatorWrapper
         @validator={{this.customValidator}}
         @validating={{true}}
-        @model={{this.model}}
+        @model={{hash data=this.model.data}}
         as |v|
       >
         <input name="data" value={{this.model.data}} />
@@ -364,14 +367,19 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     );
     assert.dom('[data-test-error]').doesNotExist();
     this.set('model', { ...this.model, data: 2 });
+    await settled();
     assert.dom('[data-test-error]').doesNotExist();
     this.set('model', { ...this.model, data: 3 });
+    await settled();
     assert.dom('[data-test-error]').doesNotExist();
     this.set('model', { ...this.model, data: 4 });
+    await settled();
     assert.dom('[data-test-error]').doesNotExist();
     this.set('model', { ...this.model, data: 5 });
+    await settled();
     assert.dom('[data-test-error]').hasText('error');
     this.set('model', { ...this.model, data: 6 });
+    await settled();
     assert.dom('[data-test-error]').doesNotExist();
     assert.equal(
       warnSpy.args.filter((e) => e[2].id === MALFORMED_CUSTOM_VALIDATOR_RETURN)
@@ -408,7 +416,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       <ValidatorWrapper
         @validator={{this.customValidator}}
         @validating={{true}}
-        @model={{this.model}}
+        @model={{hash email=this.model.email field2=this.model.field2}}
         as |v|
       >
         <input
@@ -436,6 +444,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       );
 
     this.set('model', { ...this.model, email: 'valid' });
+    await settled();
     assert
       .dom('[data-test-error-email]')
       .hasText(
@@ -443,14 +452,84 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         'second customValidator triggered'
       );
     this.set('model', { ...this.model, field2: true });
+    await settled();
     assert
       .dom('[data-test-error-email]')
       .doesNotExist('validation error removed');
   });
 
   test('can handle async validator', async function (assert) {
-    // TODO bear
-    assert.ok(1);
+    const deferred1 = defer();
+    const deferred2 = defer();
+    const deferred3 = defer();
+    this.model = { email: 'invalid@gmail.com' };
+    this.showForm = true;
+    this.customValidator = async function customValidator({ email }) {
+      if (/^invalid/.test(email)) {
+        await deferred1.promise;
+        return { email: 'ASYNC_VALIDATION_ERROR' };
+      } else if (/^valid/.test(email)) {
+        await deferred2.promise;
+        return { email: '' };
+      }
+      await deferred3.promise;
+    };
+
+    await render(hbs`
+      {{#if this.showForm}}
+        <ValidatorWrapper
+          @validator={{this.customValidator}}
+          @validating={{true}}
+          @model={{hash email=this.model.email}}
+          as |v|
+        >
+          <input
+            name="email"
+            data-test-email
+            value={{this.model.email}}
+            onInput={{this.onInput}}
+            required
+          />
+          {{#if v.loading}}
+            <p data-test-loading>loading for validation</p>
+          {{else if v.errorMessage.email}}
+            <p data-test-error>{{v.errorMessage.email}}</p>
+          {{/if}}
+        </ValidatorWrapper>
+      {{/if}}
+    `);
+    assert
+      .dom('[data-test-loading]')
+      .exists('validation loading indicator should be appear while loading');
+
+    deferred1.resolve();
+    await settled();
+    assert
+      .dom('[data-test-error]')
+      .exists('error unfold when validation resolve');
+
+    await fillIn('[data-test-email]', 'valid@gmail.com');
+    assert
+      .dom('[data-test-loading]')
+      .exists('validation loading indicator should be appear while loading');
+    deferred2.resolve();
+    await settled();
+    assert
+      .dom('[data-test-loading]')
+      .doesNotExist(
+        'validation loading indicator should be hidden after user fix the error'
+      );
+    assert
+      .dom('[data-test-error]')
+      .doesNotExist(
+        'validation error should be hidden after user fix the error'
+      );
+    // assert the async callback will be no-op when the component is destroyed
+    await fillIn('[data-test-email]', 'other@gmail.com');
+    this.set('showForm', false);
+    deferred3.resolve();
+
+    await settled();
   });
 
   test('constraint validation works when tag name and attr defined case insensitively', async function (assert) {
@@ -460,7 +539,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     });
     await render(hbs`
       <ValidatorWrapper
-        @model={{this.model}}
+        @model={{hash email=this.model.email}}
         @validating={{true}}
         as |v|
       >

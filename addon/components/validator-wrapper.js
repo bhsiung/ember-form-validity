@@ -1,5 +1,5 @@
 import Component from '@glimmer/component';
-import { action, setProperties } from '@ember/object';
+import { setProperties, action } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
 import { intersection } from 'ember-form-validation/utils/array-helpers';
 import { warn } from '@ember/debug';
@@ -77,6 +77,12 @@ export default class ValidatorWrapper extends Component {
   hadCustomError = false;
 
   /**
+   * A flag to indicate if the wrapper is currently loading async validation
+   * @type {boolean}
+   */
+  @tracked loading = false;
+
+  /**
    * proxied error message based on the `validating` flag
    * @readonly
    * @memberof ValidatorWrapper
@@ -106,9 +112,11 @@ export default class ValidatorWrapper extends Component {
   /**
    * @returns {ValidationError}
    */
-  _customValidate() {
+  async _customValidate() {
+    this.loading = true;
     for (const validator of this.validators) {
-      const result = validator(this.args.model);
+      const result = await validator(this.args.model);
+      if (this.isDestroyed || this.isDestroyed) return {};
       if (!isValidValidationError(result)) {
         warn(
           'The error result need to conform the key-value pair format. e.g { "input-name": "error message" }',
@@ -120,9 +128,11 @@ export default class ValidatorWrapper extends Component {
           id: VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
         });
       } else if (!isEmptyValidationError(result)) {
+        this.loading = false;
         return result;
       }
     }
+    this.loading = false;
     return {};
   }
 
@@ -130,22 +140,15 @@ export default class ValidatorWrapper extends Component {
    * @param {DOMNode} element - the wrapper element
    * @returns {ValidationError}
    */
-  _collectCustomViolation(element) {
+  async _collectCustomViolation(element) {
     if (this.validators.length === 0) return {};
 
-    const error = this._customValidate(element);
+    const error = await this._customValidate(element);
+    if (this.isDestroyed || this.isDestroyed) return {};
+    this._setCustomValidity(element, error, /** isAriaInvalid*/ true);
+    this.hadCustomError = true;
 
-    if (!error) {
-      this.hadCustomError = false;
-      return {};
-    } else if (typeof error === 'object') {
-      this._setCustomValidity(element, error, /** isAriaInvalid*/ true);
-      this.hadCustomError = true;
-
-      return error;
-    }
-
-    return {};
+    return error;
   }
 
   /**
@@ -241,7 +244,7 @@ export default class ValidatorWrapper extends Component {
    * @return {ValidationError}
    */
   @action
-  contextualValidator(rootElement) {
+  async contextualValidator(rootElement) {
     if (this.hadCustomError) {
       // this is needed for a corner case. assume both constraint and custom validator exists, a
       // node failed on custom validation from the last execution, user fixed it but violate the
@@ -262,9 +265,10 @@ export default class ValidatorWrapper extends Component {
       Object.keys(errorFromConstraintValidation).length;
     if (anyFieldPassedConstraintValidation) {
       error = {
-        ...this._collectCustomViolation(rootElement),
+        ...(await this._collectCustomViolation(rootElement)),
         ...errorFromConstraintValidation,
       };
+      if (this.isDestroyed || this.isDestroyed) return;
     } else {
       error = errorFromConstraintValidation;
     }
