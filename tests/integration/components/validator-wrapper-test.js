@@ -41,11 +41,11 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     const that = this;
     this.onInput = function (e) {
       const element = e.target;
-      that.set('model', { ...that.model, email: element.value });
+      that.set('model.email', element.value);
     };
     this.onInput2 = function (e) {
       const element = e.target;
-      that.set('model', { ...that.model, field2: element.value });
+      that.set('model.field2', element.value);
     };
     this.onWrapperValidate = sinon.stub();
   });
@@ -126,7 +126,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       <ValidatorWrapper
         @validators={{array this.notLinkedinEmail this.notMsEmail}}
         @validating={{this.validating}}
-        @model={{this.model}}
+        @model={{hash email=this.model.email}}
         @onWrapperValidate={{this.onWrapperValidate}}
         @registerId={{this.registerId}}
         as |v|>
@@ -349,7 +349,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       <ValidatorWrapper
         @validator={{this.customValidator}}
         @validating={{true}}
-        @model={{this.model}}
+        @model={{hash data=this.model.data}}
         as |v|
       >
         <input name="data" value={{this.model.data}} />
@@ -416,7 +416,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       <ValidatorWrapper
         @validator={{this.customValidator}}
         @validating={{true}}
-        @model={{this.model}}
+        @model={{hash email=this.model.email field2=this.model.field2}}
         as |v|
       >
         <input
@@ -480,7 +480,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         <ValidatorWrapper
           @validator={{this.customValidator}}
           @validating={{true}}
-          @model={{this.model}}
+          @model={{hash email=this.model.email}}
           as |v|
         >
           <input
@@ -539,7 +539,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     });
     await render(hbs`
       <ValidatorWrapper
-        @model={{this.model}}
+        @model={{hash email=this.model.email}}
         @validating={{true}}
         as |v|
       >

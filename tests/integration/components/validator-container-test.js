@@ -29,7 +29,7 @@ module('Integration | Component | validator-container', (hooks) => {
   test('it can validate form when validating = true by default', async function (assert) {
     this.model = { email: '' };
     this.onInput = (e) => {
-      this.set('model', { email: e.target.value });
+      this.set('model.email', e.target.value);
     };
 
     await render(hbs`
@@ -75,10 +75,10 @@ module('Integration | Component | validator-container', (hooks) => {
     };
     this.model = { field1: '', field2: '' };
     this.onInput1 = (e) => {
-      this.set('model', { ...this.model, field1: e.target.value });
+      this.set('model.field1', e.target.value);
     };
     this.onInput2 = (e) => {
-      this.set('model', { ...this.model, field2: e.target.value });
+      this.set('model.field2', e.target.value);
     };
 
     await render(hbs`
