@@ -8,9 +8,12 @@ body {
 }
 h1,
 h2,
-h3,
-h4 {
+h3 {
   color: #e76f51;
+  font-family: 'Arvo', serif;
+}
+h4 {
+  color: #2A9D8F;
   font-family: 'Arvo', serif;
 }
 a {
@@ -25,7 +28,17 @@ a:focus {
 .example {
   padding: 20px;
 }
+*:target::before{
+  content: '';
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  margin-right: .5em;
+  background-color: #E9C46A;
+}
 code {
+  color: #111;
   background: #eee;
   padding: 0 0.4em;
   border-radius: .3em;
