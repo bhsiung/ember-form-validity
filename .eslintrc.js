@@ -25,6 +25,7 @@ module.exports = {
     {
       files: [
         '.eslintrc.js',
+        'tests/dummy/config/environment.js',
         'prettier.config.js',
         '.prettierrc.js',
         '.template-lintrc.js',

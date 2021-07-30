@@ -1,0 +1,51 @@
+/* color schema */
+/* https://coolors.co/264653-2a9d8f-e9c46a-f4a261-e76f51 */
+body {
+  font-family: 'Rubik', sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #333;
+}
+h1,
+h2,
+h3 {
+  color: #e76f51;
+  font-family: 'Arvo', serif;
+}
+h4 {
+  color: #2A9D8F;
+  font-family: 'Arvo', serif;
+}
+a {
+  text-decoration: none;
+  color: #2a9d8f;
+}
+a:visited,
+a:hover,
+a:focus {
+  color: #1a759f;
+}
+.example {
+  padding: 20px;
+}
+*:target::before{
+  content: '';
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+  margin-right: .5em;
+  background-color: #E9C46A;
+}
+code {
+  color: #111;
+  background: #eee;
+  padding: 0 0.4em;
+  border-radius: .3em;
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 0.9em;
+}
+input {
+  padding: 0.2em;
+}
