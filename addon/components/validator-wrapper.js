@@ -14,6 +14,7 @@ import {
   isValidationKeyMatch,
 } from 'ember-form-validation/utils/validate-error';
 import { isEmpty } from '@ember/utils';
+import { debounce } from '@ember/runloop';
 
 /**
  * The structured error message will be used to print the error message, using
@@ -118,7 +119,7 @@ export default class ValidatorWrapper extends Component {
     this.loading = true;
     for (const validator of this.validators) {
       const result = await validator(this.args.model);
-      if (this.isDestroyed || this.isDestroyed) return {};
+      if (this.isDestroying || this.isDestroyed) return {};
       if (!isValidValidationError(result)) {
         warn(
           'The error result need to conform the key-value pair format. e.g { "input-name": "error message" }',
@@ -146,7 +147,7 @@ export default class ValidatorWrapper extends Component {
     if (this.validators.length === 0) return {};
 
     const error = await this._customValidate(element);
-    if (this.isDestroyed || this.isDestroyed) return {};
+    if (this.isDestroying || this.isDestroyed) return {};
     this._setCustomValidity(element, error, /** isAriaInvalid*/ true);
     this.hadCustomError = true;
 
@@ -242,11 +243,20 @@ export default class ValidatorWrapper extends Component {
   }
 
   /**
+   * debounced validation handler
    * @param {DOMNode} rootElement
    * @return {ValidationError}
    */
   @action
   async contextualValidator(rootElement) {
+    debounce(this, this._contextualValidator, rootElement, 150);
+  }
+
+  /**
+   * @param {DOMNode} rootElement
+   * @return {ValidationError}
+   */
+  async _contextualValidator(rootElement) {
     if (this.hadCustomError) {
       // this is needed for a corner case. assume both constraint and custom validator exists, a
       // node failed on custom validation from the last execution, user fixed it but violate the
@@ -270,7 +280,7 @@ export default class ValidatorWrapper extends Component {
         ...(await this._collectCustomViolation(rootElement)),
         ...errorFromConstraintValidation,
       };
-      if (this.isDestroyed || this.isDestroyed) return;
+      if (this.isDestroying || this.isDestroyed) return {};
     } else {
       error = errorFromConstraintValidation;
     }

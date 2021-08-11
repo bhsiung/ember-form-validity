@@ -8,7 +8,7 @@ import {
   MALFORMED_CUSTOM_VALIDATOR_RETURN,
   VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
 } from 'ember-form-validation/constants/warning-id';
-import { defer } from 'rsvp';
+import { defer, resolve } from 'rsvp';
 
 const NOT_EMPTY_ERROR = 'NOT_EMPTY_ERROR';
 
@@ -471,9 +471,12 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       } else if (/^valid/.test(email)) {
         await deferred2.promise;
         return { email: '' };
+      } else if (/^for-debunce/.test(email)) {
+        await resolve({ email: '' });
       }
       await deferred3.promise;
     };
+    sinon.spy(this, 'customValidator');
 
     await render(hbs`
       {{#if this.showForm}}
@@ -484,6 +487,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
           as |v|
         >
           <input
+            type="email"
             name="email"
             data-test-email
             value={{this.model.email}}
@@ -508,6 +512,11 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       .dom('[data-test-error]')
       .exists('error unfold when validation resolve');
 
+    await fillIn('[data-test-email]', '');
+    assert
+      .dom('[data-test-error]')
+      .containsText('fill', 'assert contextual validation is still performed');
+
     await fillIn('[data-test-email]', 'valid@gmail.com');
     assert
       .dom('[data-test-loading]')
@@ -524,6 +533,19 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       .doesNotExist(
         'validation error should be hidden after user fix the error'
       );
+    deferred3.resolve();
+    // assert debounce worked
+    this.customValidator.resetHistory();
+    fillIn('[data-test-email]', 'for-debunce1@gmail.com');
+    fillIn('[data-test-email]', 'for-debunce2@gmail.com');
+    fillIn('[data-test-email]', 'for-debunce3@gmail.com');
+    await fillIn('[data-test-email]', 'for-debunce4@gmail.com');
+    assert.ok(
+      this.customValidator.calledOnceWithExactly({
+        email: 'for-debunce4@gmail.com',
+      }),
+      'to avoid performance issue, debouce is implemented implicitly, only the last call is invoked'
+    );
     // assert the async callback will be no-op when the component is destroyed
     await fillIn('[data-test-email]', 'other@gmail.com');
     this.set('showForm', false);
