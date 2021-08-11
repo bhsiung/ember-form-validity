@@ -512,6 +512,11 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       .dom('[data-test-error]')
       .exists('error unfold when validation resolve');
 
+    await fillIn('[data-test-email]', '');
+    assert
+      .dom('[data-test-error]')
+      .containsText('fill', 'assert contextual validation is still performed');
+
     await fillIn('[data-test-email]', 'valid@gmail.com');
     assert
       .dom('[data-test-loading]')
