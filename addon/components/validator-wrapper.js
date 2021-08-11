@@ -39,7 +39,7 @@ import { isEmpty } from '@ember/utils';
 /**
  * @param {boolean} validating - determine if the form is in validating mode
  * @param {ModelForValidation} model - immutable model to be used for validation
- * @param {CustomValidatorCallback[]} [validators] - a set of validator to be test against
+ * @param {CustomValidatorCallback|CustomValidatorCallback[]} [validator] - single or a set of validator to be tested
  * @param {Function} [onWrapperValidate] - trigger and report the validation result to the container
  * @param {Function} [registerId] - assigned an ID from the container for tracking
  *
@@ -98,9 +98,11 @@ export default class ValidatorWrapper extends Component {
    * @type {Function[]}
    */
   get validators() {
-    return (
-      this.args.validators ?? (this.args.validator ? [this.args.validator] : [])
-    );
+    if (!this.args.validator) return [];
+    if (Array.isArray(this.args.validator)) {
+      return this.args.validator;
+    }
+    return [this.args.validator];
   }
 
   constructor() {

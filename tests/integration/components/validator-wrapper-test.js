@@ -65,7 +65,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
 
     await render(hbs`
       <ValidatorWrapper
-        @validators={{array this.validateNotEmpty}}
+        @validator={{array this.validateNotEmpty}}
         @validating={{this.validating}}
         @model={{this.value}}
         as |validity|
@@ -124,7 +124,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
 
     await render(hbs`
       <ValidatorWrapper
-        @validators={{array this.notLinkedinEmail this.notMsEmail}}
+        @validator={{array this.notLinkedinEmail this.notMsEmail}}
         @validating={{this.validating}}
         @model={{hash email=this.model.email}}
         @onWrapperValidate={{this.onWrapperValidate}}
