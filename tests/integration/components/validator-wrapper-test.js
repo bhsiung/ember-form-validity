@@ -7,7 +7,7 @@ import sinon from 'sinon';
 import {
   MALFORMED_CUSTOM_VALIDATOR_RETURN,
   VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
-} from 'ember-form-validation/constants/warning-id';
+} from 'ember-form-validity/constants/warning-id';
 import { defer, resolve } from 'rsvp';
 
 const NOT_EMPTY_ERROR = 'NOT_EMPTY_ERROR';

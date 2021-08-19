@@ -32,7 +32,7 @@ module.exports = function (environment) {
         {
           name: 'github',
           title: 'Form validation library for Ember.js - Repository',
-          link: 'https://github.com/bhsiung/ember-form-validation',
+          link: 'https://github.com/bhsiung/ember-form-validity',
         },
       ],
     },

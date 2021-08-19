@@ -1,1 +1,1 @@
-export { default } from 'ember-form-validation/modifiers/register-element';
+export { default } from 'ember-form-validity/modifiers/register-element';

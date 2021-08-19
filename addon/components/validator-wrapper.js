@@ -1,18 +1,18 @@
 import Component from '@glimmer/component';
 import { setProperties, action } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
-import { intersection } from 'ember-form-validation/utils/array-helpers';
+import { intersection } from 'ember-form-validity/utils/array-helpers';
 import { warn } from '@ember/debug';
 import {
   FORM_ELEMENT_WITHOUT_NAME_ATTR,
   MALFORMED_CUSTOM_VALIDATOR_RETURN,
   VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
-} from 'ember-form-validation/constants/warning-id';
+} from 'ember-form-validity/constants/warning-id';
 import {
   isEmptyValidationError,
   isValidValidationError,
   isValidationKeyMatch,
-} from 'ember-form-validation/utils/validate-error';
+} from 'ember-form-validity/utils/validate-error';
 import { isEmpty } from '@ember/utils';
 import { debounce } from '@ember/runloop';
 

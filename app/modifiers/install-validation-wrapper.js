@@ -1,1 +1,1 @@
-export { default } from 'ember-form-validation/modifiers/install-validation-wrapper';
+export { default } from 'ember-form-validity/modifiers/install-validation-wrapper';

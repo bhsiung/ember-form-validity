@@ -1,1 +1,1 @@
-export { default } from 'ember-form-validation/components/test';
+export { default } from 'ember-form-validity/components/test';

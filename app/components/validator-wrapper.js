@@ -1,1 +1,1 @@
-export { default } from 'ember-form-validation/components/validator-wrapper';
+export { default } from 'ember-form-validity/components/validator-wrapper';

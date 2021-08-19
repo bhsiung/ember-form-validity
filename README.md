@@ -1,4 +1,4 @@
-ember-form-validation
+ember-form-validity
 ==============================================================================
 
 [Short description of the addon.]
@@ -16,7 +16,7 @@ Installation
 ------------------------------------------------------------------------------
 
 ```
-ember install ember-form-validation
+ember install ember-form-validity
 ```
 
 

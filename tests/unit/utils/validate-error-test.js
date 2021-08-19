@@ -2,7 +2,7 @@ import {
   isValidationKeyMatch,
   isEmptyValidationError,
   isValidValidationError,
-} from 'ember-form-validation/utils/validate-error';
+} from 'ember-form-validity/utils/validate-error';
 import { module, test } from 'qunit';
 import { htmlSafe } from '@ember/template';
 
