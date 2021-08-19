@@ -2,6 +2,7 @@
 
 # compiled output
 /dist/
+/pages/
 /tmp/
 
 # dependencies
