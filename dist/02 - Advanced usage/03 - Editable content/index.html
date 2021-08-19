@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+<meta name="dummy/config/environment" content="%7B%22modulePrefix%22%3A%22dummy%22%2C%22environment%22%3A%22production%22%2C%22rootURL%22%3A%22%2F%22%2C%22locationType%22%3A%22trailing-history%22%2C%22EmberENV%22%3A%7B%22FEATURES%22%3A%7B%7D%2C%22EXTEND_PROTOTYPES%22%3A%7B%22Date%22%3Afalse%7D%2C%22_APPLICATION_TEMPLATE_WRAPPER%22%3Afalse%2C%22_DEFAULT_ASYNC_OBSERVERS%22%3Atrue%2C%22_JQUERY_INTEGRATION%22%3Afalse%2C%22_TEMPLATE_ONLY_GLIMMER_COMPONENTS%22%3Atrue%7D%2C%22APP%22%3A%7B%7D%2C%22field-guide%22%3A%7B%22name%22%3A%22form%20validation%22%2C%22copyright%22%3A%22This%20is%20the%20default%20copyright%20string%20-%20update%20before%20publishing%22%2C%22social%22%3A%5B%7B%22name%22%3A%22github%22%2C%22title%22%3A%22Form%20validation%20library%20for%20Ember.js%20-%20Repository%22%2C%22link%22%3A%22https%3A%2F%2Fgithub.com%2Fbhsiung%2Fember-form-validation%22%7D%5D%7D%2C%22historySupportMiddleware%22%3Atrue%2C%22exportApplicationGlobal%22%3Afalse%2C%22fastboot%22%3A%7B%22hostWhitelist%22%3A%5B%7B%7D%5D%7D%7D" />
+<!-- EMBER_CLI_FASTBOOT_TITLE -->  <meta name="ember-cli-head-start" content>  <title>form validation - Field Guide</title>
+
+  <meta name="description" content="For artificial input elements TBD">
+
+<meta name="referrer" content="unsafe-url">
+
+<!---->
+<!---->
+<!---->
+  <meta property="og:site_name" content="form validation - Field Guide">
+
+  <meta property="og:title" content="form validation - Field Guide">
+
+<!---->
+  <meta property="og:description" content="For artificial input elements TBD">
+
+  <meta property="og:type" content="website">
+
+  <meta property="og:image" content="/undefined">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="256">
+  <meta property="og:image:height" content="256">
+
+<meta name="twitter:card" content="summary">
+
+<!---->
+  <meta name="twitter:image:src" content="/undefined">
+
+  <meta name="twitter:title" content="form validation - Field Guide">
+
+<!---->
+  <meta name="twitter:description" content="For artificial input elements TBD">
+
+<!---->
+<!---->
+<!----><meta name="ember-cli-head-end" content>
+
+<link href="https://fonts.googleapis.com/css?family=Fredericka+the+Great&display=swap" rel="stylesheet">
+
+    <link integrity="" rel="stylesheet" href="/assets/vendor-ea991a23275ab825fa32c32b7ffe1d81.css">
+    <link integrity="" rel="stylesheet" href="/assets/dummy-1fd16c5aca02dcb8e89221b0437b1e25.css">
+
+    <!-- https://fonts.google.com/share?selection.family=Arvo:wght@400;700%7CRubik:ital,wght@0,400;0,700;1,400 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Arvo:wght@400;700&family=Rubik:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    
+  </head>
+  <body>
+    <script type="x/boundary" id="fastboot-body-start"></script><div class="field-guide-wrapper">
+  <nav class="field-guide-sidenav ">
+<a id="ember63" class="ember-view home-link" href="/index">        <span class="field-guide-fake-logo">form validation</span>
+      <span>
+          form validation Field Guide
+      </span>
+</a>
+    <div class="field-guide-table-of-contents">
+      
+<ul class="field-guide-toc">
+<a id="ember64" class="ember-view" href="/index">        <li class="field-guide-toc-item field-guide-toc-item-link" style="padding-left:1em;">
+          Index
+        </li>
+</a><a id="ember65" class="ember-view" href="/01 - API">        <li class="field-guide-toc-item field-guide-toc-item-link" style="padding-left:1em;">
+          01 - API
+        </li>
+</a>      <li class="field-guide-toc-item">
+        <span style="padding-left:1em;">
+          02 - Advanced usage
+        </span>
+        
+<ul class="field-guide-toc">
+<a id="ember67" class="ember-view" href="/02 - Advanced usage/01 - Async custom validation">        <li class="field-guide-toc-item field-guide-toc-item-link" style="padding-left:2em;">
+          01 - Async custom validation
+        </li>
+</a><a id="ember68" class="ember-view" href="/02 - Advanced usage/02 - Customize error message">        <li class="field-guide-toc-item field-guide-toc-item-link" style="padding-left:2em;">
+          02 - Customize error message
+        </li>
+</a><a id="ember69" class="ember-view active" href="/02 - Advanced usage/03 - Editable content">        <li class="field-guide-toc-item field-guide-toc-item-link" style="padding-left:2em;">
+          03 - Editable content
+        </li>
+</a><a id="ember70" class="ember-view" href="/02 - Advanced usage/04 - Multiple inputs within single wrapper">        <li class="field-guide-toc-item field-guide-toc-item-link" style="padding-left:2em;">
+          04 - Multiple inputs within single wrapper
+        </li>
+</a></ul>
+
+      </li>
+</ul>
+
+    </div>
+  </nav>
+  <div class="field-guide-wrapper-full-height">
+    <main>
+      <!---->
+<h1 id="forartificialinputelements">For artificial input elements</h1>
+<p>TBD</p>
+
+      <button class="field-guide-show-sidenav">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 32 32" height="25">
+          <path d="M4 10h24a2 2 0 0 0 0-4H4a2 2 0 0 0 0 4zm24 4H4a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4zm0 8H4a2 2 0 0 0 0 4h24a2 2 0 0 0 0-4z"></path>
+        </svg>
+      </button>
+    </main>
+    <footer class="field-guide-footer">
+      <div id="ember72" class="ember-view field-guide-footer-info"><p>This is the default copyright string - update before publishing</p>
+</div>
+      <div class="field-guide-footer-right">
+        <ul class="field-guide-socials">
+<!---->
+            <a href="https://github.com/bhsiung/ember-form-validation" title="Form validation library for Ember.js - Repository" target="_blank" rel="noopener">
+              <img src="/icons/social/github.svg" alt role="presentation">
+            </a>
+        </ul>
+        <p>
+          Built with <a href="https://github.com/empress/field-guide" target="_blank" rel="noopener">Field Guide</a>
+        </p>
+      </div>
+    </footer>
+  </div>
+</div>
+<script type="x/boundary" id="fastboot-body-end"></script>
+
+    <script src="/assets/vendor-46c169789128c88a37a55e30e5e5fcf1.js"></script>
+    <script src="/assets/dummy-90604cf18c6313998f22c7610563c121.js"></script>
+
+    
+  </body>
+</html>
