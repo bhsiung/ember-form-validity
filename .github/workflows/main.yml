@@ -18,25 +18,23 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: borales/actions-yarn@v2.3.0
+
+      - uses: volta-cli/action@v1
         with:
-          cmd: install # will run `yarn install` command
-      - uses: borales/actions-yarn@v2.3.0
-        with:
-          cmd: lint:js
-      - uses: borales/actions-yarn@v2.3.0
-        with:
-          cmd: lint:hbs
+          node-version: 12.x
+          yarn-version: 1.22.10
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
 
   test:
-    name: Tests
+    name: Ember Tests
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
-      - uses: borales/actions-yarn@v2.3.0
+      - uses: volta-cli/action@v1
         with:
-          cmd: install # will run `yarn install` command
-      - uses: borales/actions-yarn@v2.3.0
-        with:
-          cmd: test
+          node-version: 12.x
+          yarn-version: 1.22.10
+      - run: yarn install --frozen-lockfile
+      - run: yarn test:ember
