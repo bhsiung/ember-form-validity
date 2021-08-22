@@ -2,12 +2,7 @@ import { module, skip, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { click, fillIn, find, render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
-import EmberDebugger from '@ember/debug';
 import sinon from 'sinon';
-import {
-  MALFORMED_CUSTOM_VALIDATOR_RETURN,
-  VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
-} from 'ember-form-validity/constants/warning-id';
 import { defer, resolve } from 'rsvp';
 
 const NOT_EMPTY_ERROR = 'NOT_EMPTY_ERROR';
@@ -328,7 +323,6 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   });
 
   test('it warns when custom validator returns mismatch format', async function (assert) {
-    const warnSpy = sinon.stub(EmberDebugger, 'warn');
     this.model = { data: 1 };
     this.customValidator = function customValidator({ data }) {
       if (data === 1) {
@@ -359,12 +353,6 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       </ValidatorWrapper>
     `);
 
-    assert.ok(
-      warnSpy.calledWithMatch('error', false, {
-        id: MALFORMED_CUSTOM_VALIDATOR_RETURN,
-      }),
-      'warn for invalid format'
-    );
     assert.dom('[data-test-error]').doesNotExist();
     this.set('model', { ...this.model, data: 2 });
     await settled();
@@ -381,25 +369,6 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     this.set('model', { ...this.model, data: 6 });
     await settled();
     assert.dom('[data-test-error]').doesNotExist();
-    assert.equal(
-      warnSpy.args.filter((e) => e[2].id === MALFORMED_CUSTOM_VALIDATOR_RETURN)
-        .length,
-      3,
-      'warn for invalid format for 3 times'
-    );
-    assert.equal(
-      warnSpy.args.filter((e) => e[2].id === MALFORMED_CUSTOM_VALIDATOR_RETURN)
-        .length,
-      3,
-      'warn for invalid format for 3 times'
-    );
-    assert.equal(
-      warnSpy.args.filter(
-        (e) => e[2].id === VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME
-      ).length,
-      1,
-      'warn for discrepant key to input name once'
-    );
   });
 
   test('can validate when external prop change', async function (assert) {
