@@ -25,13 +25,14 @@ module.exports = function (environment) {
 
     'field-guide': {
       name: 'form validation',
+      logo: '/form-vadility-logo.svg',
       copyright:
         'This is the default copyright string - update before publishing',
 
       social: [
         {
           name: 'github',
-          title: 'Form validation library for Ember.js - Repository',
+          title: 'Form validility library for Ember.js - Repository',
           link: 'https://github.com/bhsiung/ember-form-validity',
         },
       ],
