@@ -19,14 +19,14 @@
     "build": "ember build --environment=production",
     "lint": "npm-run-all --aggregate-output --continue-on-error --parallel \"lint:!(fix)\"",
     "lint:fix": "npm-run-all --aggregate-output --continue-on-error --parallel lint:*:fix",
-    "lint:hbs": "ember-template-lint .",
-    "lint:hbs:fix": "ember-template-lint . --fix",
-    "lint:js": "eslint . --cache",
+    "lint:hbs": "ember-template-lint addon",
+    "lint:hbs:fix": "ember-template-lint addon --fix",
+    "lint:js": "eslint addon --cache",
     "lint:js:fix": "eslint . --fix",
     "start": "ember serve",
     "test": "npm-run-all lint test:*",
     "test:ember": "ember test",
-    "test:ember-compatibility": "ember try:each"
+    "ember-compatibility": "ember try:each"
   },
   "dependencies": {
     "ember-cli-babel": "^7.26.6",
@@ -57,7 +57,7 @@
     "ember-qunit": "^5.1.4",
     "ember-resolver": "^8.0.2",
     "ember-sinon": "^5.0.0",
-    "ember-source": "~3.27.2",
+    "ember-source": "https://s3.amazonaws.com/builds.emberjs.com/canary/shas/5593d7e2df632c62ddbe4055439c8121d7de4c10.tgz",
     "ember-source-channel-url": "^3.0.0",
     "ember-template-lint": "^3.4.2",
     "ember-truth-helpers": "^3.0.0",
