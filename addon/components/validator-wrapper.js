@@ -192,14 +192,11 @@ export default class ValidatorWrapper extends Component {
         !element.validity.customError &&
         !element.validity.valid
       ) {
-        // TODO @bear
-        // if (element.validity.valueMissing) {
-        // } else if (element.validity.typeMismatch) {
-        // } else if (element.validity.patternMismatch) {
-        // }
-        // TODO bhsiung - support min (rangeUnderflow) & max (rangeOverflow) for type=number
-        // TODO bhsiung - support minlength (tooShort) & maxlength (tooLong)
-        error[element.name] = element.validationMessage;
+        if (this.args.customErrorFactory) {
+          error[element.name] = this.args.customErrorFactory(element);
+        } else {
+          error[element.name] = element.validationMessage;
+        }
       }
     }
 
