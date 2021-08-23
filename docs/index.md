@@ -17,6 +17,7 @@ Here we are trying work with the native form validity API from the browser and i
       name='email'
       required
       value={{this.email}}
+      autocomplete="off"
     />
     {{#if validity.errorMessage.email}}
       <p data-test-error>{{validity.errorMessage.email}}</p>
