@@ -8,6 +8,9 @@
   --color4: #f7ede2;
   --color4: #f6bd60;
 }
+html {
+  scroll-behavior: smooth;
+}
 body {
   font-size: 16px;
   line-height: 1.7;
@@ -44,13 +47,21 @@ h1,
 h2,
 h4,
 h3 {
-  font-size: 2em;
   font-family: 'Amiri', serif;
+}
+h1 {
+  font-size: 2em;
+}
+h2,
+h4,
+h3 {
+  font-size: 1.3em;
 }
 h1,
 h2,
 h3 {
   color: #000;
+  border-bottom: 1px solid #000;
 }
 h4 {
   color: var(--color1);
@@ -67,14 +78,8 @@ a:focus {
 .example {
   padding: 20px;
 }
-*:target::before {
-  content: '';
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  vertical-align: middle;
-  margin-right: 0.5em;
-  background-color: var(--color4);
+*:target {
+  border-bottom: 1px solid var(--color4);
 }
 code {
   font-family: 'Ubuntu Mono', monospace;

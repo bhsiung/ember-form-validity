@@ -31,6 +31,13 @@ import { debounce } from '@ember/runloop';
  */
 
 /**
+ * This callback produce customized error message for constraint validation
+ * @callback CustomErrorFactory
+ * @param {DOMNode} element - the target input element
+ * @return {String} the designated error message.
+ */
+
+/**
  * This callback represents the custom validation such as max length check
  * @callback CustomValidatorCallback
  * @param {ModelForValidation} model
@@ -43,6 +50,7 @@ import { debounce } from '@ember/runloop';
  * @param {CustomValidatorCallback|CustomValidatorCallback[]} [validator] - single or a set of validator to be tested
  * @param {Function} [onWrapperValidate] - trigger and report the validation result to the container
  * @param {Function} [registerId] - assigned an ID from the container for tracking
+ * @param {CustomErrorFactory} [customErrorFactory]
  *
  * yield properties
  * @param {ValidationError} errorMessage
@@ -54,6 +62,7 @@ import { debounce } from '@ember/runloop';
  *   @onWrapperValidate={{this.onWrapperValidate}}
  *   @registerId={{this.registerId}}
  *   @model={{hash email=this.email}}
+ *   @customErrorFactory={{custom-error-message}}
  *   as |v|
  * >
  *   <input
@@ -192,14 +201,11 @@ export default class ValidatorWrapper extends Component {
         !element.validity.customError &&
         !element.validity.valid
       ) {
-        // TODO @bear
-        // if (element.validity.valueMissing) {
-        // } else if (element.validity.typeMismatch) {
-        // } else if (element.validity.patternMismatch) {
-        // }
-        // TODO bhsiung - support min (rangeUnderflow) & max (rangeOverflow) for type=number
-        // TODO bhsiung - support minlength (tooShort) & maxlength (tooLong)
-        error[element.name] = element.validationMessage;
+        if (this.args.customErrorFactory) {
+          error[element.name] = this.args.customErrorFactory(element);
+        } else {
+          error[element.name] = element.validationMessage;
+        }
       }
     }
 

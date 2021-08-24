@@ -572,4 +572,112 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         'display correct message when input element with attribute of `type="URL"`'
       );
   });
+
+  test('customize error for constraint violation', async function (assert) {
+    this.setProperties({
+      date: '',
+      url: 'wrong url',
+    });
+    this.onChangeDate = (e) => {
+      this.set('date', e.target.value);
+    };
+    this.onChangeUrl = (e) => {
+      console.log(e.target.value);
+      this.set('url', e.target.value);
+    };
+    await render(hbs`
+      <ValidatorWrapper
+        @model={{hash date=this.date url=this.url}}
+        @validating={{true}}
+        @customErrorFactory={{custom-error-message}}
+        as |v|
+      >
+        <input
+          type="month"
+          value={{this.date}}
+          onInput={{this.onChangeDate}}
+          required
+          step="2"
+          max="2021-09"
+          min="2020-01"
+          name="date"
+          data-test-input="date"
+        />
+        {{#if v.errorMessage.date}}
+          <p data-test-error="date">{{v.errorMessage.date}}</p>
+        {{/if}}
+
+        <input
+          type="url"
+          value={{this.url}}
+          onInput={{this.onChangeUrl}}
+          pattern="http:.*"
+          maxlength="20"
+          minlength="10"
+          name="url"
+          data-test-input="url"
+        />
+        {{#if v.errorMessage.url}}
+          <p data-test-error="url">{{v.errorMessage.url}}</p>
+        {{/if}}
+      </ValidatorWrapper>
+    `);
+
+    // valueMissing
+    assert
+      .dom('[data-test-error="date"]')
+      .hasText(
+        'VALUE_MISSING',
+        'it errors out when the date value is missing where is required'
+      );
+
+    // rangeOverflow
+    await fillIn('[data-test-input="date"]', '2021-10');
+    assert
+      .dom('[data-test-error="date"]')
+      .hasText(
+        'VALUE_TOO_MUCH',
+        '2021-10 is greater than the max value, which is set to 2021-09'
+      );
+
+    // rangeUnderflow
+    await fillIn('[data-test-input="date"]', '2019-12');
+    assert
+      .dom('[data-test-error="date"]')
+      .hasText(
+        'VALUE_TOO_LOW',
+        '2019-12 is too low where the minimum is set at 2020-01'
+      );
+
+    // stepMismatch
+    await fillIn('[data-test-input="date"]', '2021-06');
+    assert
+      .dom('[data-test-error="date"]')
+      .hasText(
+        'VALUE_MISMATCH_STEP',
+        'as step is set at 2, which means it every other month is sligible from 2020-01 (min)'
+      );
+
+    // date passs
+    await fillIn('[data-test-input="date"]', '2021-07');
+    assert
+      .dom('[data-test-error="date"]')
+      .doesNotExist(
+        'error message for date dismisses when the value is correct'
+      );
+
+    // typeMismatch
+    assert
+      .dom('[data-test-error="url"]')
+      .hasText(
+        'TYPE_MISMATCH',
+        'display correct message when input element with attribute of `type="EMAIL"`'
+      );
+
+    // patternMismatch
+    await fillIn('[data-test-input="url"]', 'https://xxx.com');
+    assert
+      .dom('[data-test-error="url"]')
+      .hasText('PATTERN_MISMATCH', 'it errors out when pattern mismatch');
+  });
 });
