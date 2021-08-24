@@ -186,7 +186,7 @@ Most of the modern browsers can render a calender for date input and already bla
 ## String fields
 
 list of attributes available for validation:
-- pattern
+- [pattern](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/pattern)
 - maxlength
 - minlength
 

@@ -44,8 +44,15 @@ h1,
 h2,
 h4,
 h3 {
-  font-size: 2em;
   font-family: 'Amiri', serif;
+}
+h1 {
+  font-size: 2em;
+}
+h2,
+h4,
+h3 {
+  font-size: 1.3em;
 }
 h1,
 h2,
