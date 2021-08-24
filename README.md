@@ -2,7 +2,7 @@
 
 ![Slice 1 (1)](https://user-images.githubusercontent.com/3668313/130347207-7db1bb99-9a66-4e3f-bacf-aa3176b3bf69.png)
 
-Form validation toolkit with Ember.js. The full documentation can be found in the [API reference](https://frosty-swartz-6ba6b7.netlify.app/).
+Form validation toolkit with Ember.js. The full documentation can be found in the [API reference](https://ember-for-validity.netlify.app/).
 
 
 Compatibility
