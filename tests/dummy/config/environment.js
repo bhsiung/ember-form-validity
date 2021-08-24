@@ -27,7 +27,7 @@ module.exports = function (environment) {
       name: 'form validation',
       logo: '/form-vadility-logo.svg',
       copyright:
-        'This is the default copyright string - update before publishing',
+        'Copyright (c) 2021 Biingyann Hsiung',
 
       social: [
         {
