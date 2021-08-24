@@ -1,3 +1,4 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/5023c11a-a892-4a31-b7f4-199678dfbb07/deploy-status)](https://app.netlify.com/sites/frosty-swartz-6ba6b7/deploys)
 ![Slice 1 (1)](https://user-images.githubusercontent.com/3668313/130347207-7db1bb99-9a66-4e3f-bacf-aa3176b3bf69.png)
 
 Form validation toolkit with Ember.js. The full documentation can be found in the [API reference](https://frosty-swartz-6ba6b7.netlify.app/).
