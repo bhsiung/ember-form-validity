@@ -24,7 +24,7 @@ ember install ember-form-validity
 Usage
 ------------------------------------------------------------------------------
 
-[Longer description of how to use the addon in apps.]
+This add-on aims to resolve the form validation on your WEB development. Yes, it can be straightforward build a simple solution by listening the input event and disable the continue button until it's correct. But that's clearly not always the case, especially when the project involve tons of user inputs. Normally a form validation library can ease the pain and setup a certain standard for consistency. Well, this is one of them, however, we are trying build a tool that is more versatile and allow you to take advantage from the native browser validation.
 
 
 Contributing
