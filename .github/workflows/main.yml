@@ -39,7 +39,7 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn test:ember
 
-  test:
+  ember-try:
     name: Ember Tests
     runs-on: ubuntu-latest
 
