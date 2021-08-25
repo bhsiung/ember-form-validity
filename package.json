@@ -1,16 +1,22 @@
 {
   "name": "ember-form-validity",
   "version": "0.1.0",
-  "description": "The default blueprint for ember-cli addons.",
+  "description": "This add-on aims to resolve the form validation on your WEB development. Yes, it can be straightforward build a simple solution by listening the `input` event and disable the `continue` button until it's correct. But that's clearly not always the case, especially when the project involve tons of user input. Normally a form validation library can ease the pain and setup a certain standard for consistency. Well, this is one of them, however, we are trying build a tool that is more versatile and not stop you the way.",
   "keywords": [
-    "ember-addon"
+    "ember-addon",
+    "form",
+    "validation"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/bhsiung/ember-form-validity.git"
   },
+  "bugs": {
+    "url": "https://github.com/bhsiung/ember-form-validity/issues"
+  },
+  "homepage": "https://ember-for-validity.netlify.app/",
   "license": "MIT",
-  "author": "",
+  "author": "Biingyann Hsiung",
   "directories": {
     "doc": "doc",
     "test": "tests"

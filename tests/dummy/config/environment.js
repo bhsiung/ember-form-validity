@@ -26,8 +26,7 @@ module.exports = function (environment) {
     'field-guide': {
       name: 'form validation',
       logo: '/form-vadility-logo.svg',
-      copyright:
-        'Copyright (c) 2021 Biingyann Hsiung',
+      copyright: 'Copyright (c) 2021 Biingyann Hsiung',
 
       social: [
         {
