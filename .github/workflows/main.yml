@@ -40,7 +40,7 @@ jobs:
       - run: yarn test:ember
 
   ember-try:
-    name: Ember Tests
+    name: Ember try Tests
     runs-on: ubuntu-latest
 
     steps:
