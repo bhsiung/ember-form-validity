@@ -1,11 +1,11 @@
-import { module, skip, test } from 'qunit';
+import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { click, fillIn, find, render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 import { defer, resolve } from 'rsvp';
 
-const NOT_EMPTY_ERROR = 'NOT_EMPTY_ERROR';
+// const NOT_EMPTY_ERROR = 'NOT_EMPTY_ERROR';
 
 function notLinkedinEmail(model) {
   return /.+@linkedin\.com$/.test(model.email)
@@ -19,15 +19,15 @@ function notMsEmail(model) {
     : {};
 }
 
-function validateNotEmpty(model) {
-  if (model['rich-text-editor'].length === 0) {
-    return {
-      'rich-text-editor': NOT_EMPTY_ERROR,
-    };
-  }
+// function validateNotEmpty(model) {
+// if (model['rich-text-editor'].length === 0) {
+// return {
+// 'rich-text-editor': NOT_EMPTY_ERROR,
+// };
+// }
 
-  return {};
-}
+// return {};
+// }
 
 module('Integration | Component | validator-wrapper', (hooks) => {
   setupRenderingTest(hooks);
@@ -45,70 +45,70 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     this.onWrapperValidate = sinon.stub();
   });
 
-  skip('it validates contenteditable field', async function (assert) {
-    // TODO bear
-    this.validateNotEmpty = validateNotEmpty;
-    this.value = '';
-    this.validating = false;
+  // skip('it validates contenteditable field', async function (assert) {
+  // // TODO bear
+  // this.validateNotEmpty = validateNotEmpty;
+  // this.value = '';
+  // this.validating = false;
 
-    this.onchange = function () {
-      this.set(
-        'value',
-        document.querySelector('[name="rich-text-editor"]').textContent.trim()
-      );
-    };
+  // this.onchange = function () {
+  // this.set(
+  // 'value',
+  // document.querySelector('[name="rich-text-editor"]').textContent.trim()
+  // );
+  // };
 
-    await render(hbs`
-      <ValidatorWrapper
-        @validator={{array this.validateNotEmpty}}
-        @validating={{this.validating}}
-        @model={{this.value}}
-        as |validity|
-      >
-        {{fake-input
-          onValidate=validity.validator
-          value=this.value
-          name="rich-text-editor"
-          required=true
-        }}
-        {{#if (get v.errorMessage "rich-text-editor")}}
-          <p data-test-error>{{(get v.errorMessage "simple-email")}}</p>
-        {{/if}}
-      </ValidatorWrapper>
-    `);
+  // await render(hbs`
+  // <ValidatorWrapper
+  // @validator={{array this.validateNotEmpty}}
+  // @validating={{this.validating}}
+  // @model={{this.value}}
+  // as |validity|
+  // >
+  // {{fake-input
+  // onValidate=validity.validator
+  // value=this.value
+  // name="rich-text-editor"
+  // required=true
+  // }}
+  // {{#if (get v.errorMessage "rich-text-editor")}}
+  // <p data-test-error>{{(get v.errorMessage "simple-email")}}</p>
+  // {{/if}}
+  // </ValidatorWrapper>
+  // `);
 
-    assert
-      .dom('[data-test-error]')
-      .doesNotExist('since validating is false, no error rendered');
-    assert
-      .dom('[name="rich-text-editor"]')
-      .hasAttribute(
-        'aria-invalid',
-        'true',
-        'the element is invalid due to no value on a required field'
-      );
+  // assert
+  // .dom('[data-test-error]')
+  // .doesNotExist('since validating is false, no error rendered');
+  // assert
+  // .dom('[name="rich-text-editor"]')
+  // .hasAttribute(
+  // 'aria-invalid',
+  // 'true',
+  // 'the element is invalid due to no value on a required field'
+  // );
 
-    // set validating to true
-    this.set('validating', true);
-    assert
-      .dom('[data-test-error]')
-      .exists(
-        'display error message for empty value on required field (constraint violation)'
-      );
+  // // set validating to true
+  // this.set('validating', true);
+  // assert
+  // .dom('[data-test-error]')
+  // .exists(
+  // 'display error message for empty value on required field (constraint violation)'
+  // );
 
-    // enter a value
-    await fillIn('[name="rich-text-editor"]', '123');
-    assert
-      .dom('[data-test-error]')
-      .doesNotExist('display no error because it passed the validation');
-    assert
-      .dom('[name="rich-text-editor"]')
-      .hasAttribute(
-        'aria-invalid',
-        'false',
-        'the element is valid since the value is not empty'
-      );
-  });
+  // // enter a value
+  // await fillIn('[name="rich-text-editor"]', '123');
+  // assert
+  // .dom('[data-test-error]')
+  // .doesNotExist('display no error because it passed the validation');
+  // assert
+  // .dom('[name="rich-text-editor"]')
+  // .hasAttribute(
+  // 'aria-invalid',
+  // 'false',
+  // 'the element is valid since the value is not empty'
+  // );
+  // });
 
   test('it validate simple input field', async function (assert) {
     this.registerId = sinon.stub().returns(1);
