@@ -1,4 +1,9 @@
 
+## v0.2.0 (2021-08-27)
+- bump ember-auto-import to v2
+- bump webpack@5
+
+
 ## v0.1.2 (2021-08-25)
 
 #### :rocket: Enhancement
