@@ -1,4 +1,9 @@
-<form {{register-element this.registerElement}} data-test-validator-container novalidate>
+<form
+  novalidate
+  data-test-validator-container
+  ...attributes
+  {{register-element this.registerElement}}
+>
   {{yield
     (hash
       validating=this.validating

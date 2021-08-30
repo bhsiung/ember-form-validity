@@ -15,7 +15,7 @@ module('Integration | Component | validator-container', (hooks) => {
 
   test('it renders', async function (assert) {
     await render(hbs`
-      <ValidatorContainer @validating={{false}} as |v|>
+      <ValidatorContainer class="test-class" @validating={{false}} as |v|>
 				{{#unless v.isValid}}
 					<p data-test-global-error>something wrong</p>
 				{{/unless}}
@@ -24,6 +24,9 @@ module('Integration | Component | validator-container', (hooks) => {
 
     assert.dom('[data-test-validator-container]').exists();
     assert.dom('[data-test-global-error]').doesNotExist();
+    assert
+      .dom('[data-test-validator-container]')
+      .hasClass('test-class', 'the attributes are forwarded');
   });
 
   test('it can validate form when validating = true by default', async function (assert) {

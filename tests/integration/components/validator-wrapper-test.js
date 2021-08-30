@@ -119,6 +119,8 @@ module('Integration | Component | validator-wrapper', (hooks) => {
 
     await render(hbs`
       <ValidatorWrapper
+        data-test-attr="foo"
+        class="test-class"
         @validator={{array this.notLinkedinEmail this.notMsEmail}}
         @validating={{this.validating}}
         @model={{hash email=this.model.email}}
@@ -140,6 +142,16 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       </ValidatorWrapper>
     `);
 
+    assert
+      .dom('[data-test-validator-wrapper]')
+      .hasClass('test-class', 'the class name is forwarded');
+    assert
+      .dom('[data-test-validator-wrapper]')
+      .hasAttribute(
+        'data-test-attr',
+        'foo',
+        'the data-test attribute is forwarded'
+      );
     assert
       .dom('[data-test-error]')
       .doesNotExist('since validating is false, no error rendered');
