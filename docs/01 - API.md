@@ -6,7 +6,7 @@ this is the only component that is needed to setup to get everything done.
 
 ### Properties
 
-#### validationg `Boolean`
+#### validating `Boolean`
 An optional prop that determine if validation mode is active or not, it can be useful for forms that does NOT proceed validating until the first attempt of submission. However, the value will be set to true while when the user invoke the `checkFrom` action.
 
 ### Yield properties
