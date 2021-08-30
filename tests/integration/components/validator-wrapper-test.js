@@ -692,4 +692,49 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       .dom('[data-test-error="url"]')
       .hasText('PATTERN_MISMATCH', 'it errors out when pattern mismatch');
   });
+
+  test('it can validate if the downstream component is lazy', async function (assert) {
+    this.registerId = sinon.stub().returns(1);
+    this.model = { email: '', isLoading: true };
+    const deferred = defer();
+    deferred.promise.then(() => {
+      this.set('model.isLoading', false);
+    });
+
+    await render(hbs`
+      <ValidatorWrapper
+        data-test-attr="foo"
+        class="test-class"
+        @validating={{true}}
+        @model={{hash email=this.model.email isLoading=this.model.isLoading}}
+        @onWrapperValidate={{this.onWrapperValidate}}
+        @registerId={{this.registerId}}
+        as |v|>
+        {{#unless this.model.isLoading}}
+          <input
+            type="email"
+            required
+            name="email"
+            data-test-input
+            value={{this.model.email}}
+            {{on "input" this.onInput}}
+            pattern=".+\.com"
+          />
+          {{#if v.errorMessage.email}}
+            <p data-test-error>{{v.errorMessage.email}}</p>
+          {{/if}}
+        {{/unless}}
+      </ValidatorWrapper>
+    `);
+
+    assert.dom('[data-test-input]').doesNotExist('the input is not rendered');
+    deferred.resolve();
+    await settled();
+    assert
+      .dom('[data-test-input]')
+      .exists('the input is rendered after defer resolved');
+    assert
+      .dom('[data-test-error]')
+      .exists('the validation error is rendered after defer resolved');
+  });
 });

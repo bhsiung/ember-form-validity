@@ -236,6 +236,7 @@ export default class ValidatorWrapper extends Component {
 
   @action
   onReceiveProperties(element) {
+    this._collectInputNames(element);
     this.contextualValidator(element);
   }
 
