@@ -1,5 +1,18 @@
 
 
+
+## v0.4.0 (2021-09-01)
+
+#### :rocket: Enhancement
+* [#33](https://github.com/bhsiung/ember-form-validity/pull/33) create modifier to manually insert name attribute ([@bhsiung](https://github.com/bhsiung))
+
+#### :memo: Documentation
+* [#33](https://github.com/bhsiung/ember-form-validity/pull/33) create modifier to manually insert name attribute ([@bhsiung](https://github.com/bhsiung))
+
+#### Committers: 1
+- bear ([@bhsiung](https://github.com/bhsiung))
+
+
 ## v0.3.2 (2021-09-01)
 
 
