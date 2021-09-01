@@ -299,6 +299,8 @@ export default class ValidatorWrapper extends Component {
       );
     }
 
-    return setProperties(this, { error });
+    if (!this.isDestroying && !this.isDestroyed) {
+      return setProperties(this, { error });
+    }
   }
 }
