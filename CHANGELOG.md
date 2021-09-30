@@ -1,6 +1,19 @@
 
 
 
+
+## v1.0.0 (2021-09-30)
+
+#### :rocket: Enhancement
+* [#59](https://github.com/bhsiung/ember-form-validity/pull/59) enable usage for content editable ([@bhsiung](https://github.com/bhsiung))
+
+#### :memo: Documentation
+* [#59](https://github.com/bhsiung/ember-form-validity/pull/59) enable usage for content editable ([@bhsiung](https://github.com/bhsiung))
+
+#### Committers: 1
+- bear ([@bhsiung](https://github.com/bhsiung))
+
+
 ## v0.5.0 (2021-09-23)
 
 
