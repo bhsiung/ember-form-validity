@@ -1,4 +1,4 @@
-import { module, skip, test } from 'qunit';
+import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
 import { click, fillIn, find, render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
@@ -45,32 +45,32 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     this.onWrapperValidate = sinon.stub();
   });
 
-  skip('it validates contenteditable field', async function (assert) {
+  test('it validates contenteditable field', async function (assert) {
     const that = this;
-    this.doc = '';
-    this.requireDoc = function ({ doc }) {
+    this.values = ['', 'abc', 'foo', 'bar'];
+    this.selectedValue = '';
+    this.isRequire = function ({ value }) {
       return {
-        doc: doc ? null : 'doc is required',
+        value: value ? null : 'value is required',
       };
     };
     this.onChange = function (newValue) {
-      that.set('doc', newValue);
+      that.set('selectedValue', newValue);
     };
 
     await render(hbs`
       <ValidatorWrapper
         data-test-attr="foo"
         class="test-class"
-        @validator={{this.requireDoc}}
+        @validator={{this.isRequire}}
         @validating={{true}}
-        @model={{hash doc=this.doc}}
+        @model={{hash value=this.selectedValue}}
         @onWrapperValidate={{this.onWrapperValidate}}
         @registerId={{this.registerId}}
         as |v|>
-      >
-        <TuiEditor name="doc" @value={{this.doc}} @onChange={{this.onChange}} />
-        {{#if v.errorMessage.doc}}
-          <p data-test-error>{{v.errorMessage.doc}}</p>
+        <FakeRadioButton @selectedValue={{this.selectedValue}} @values={{this.values}} @onChange={{this.onChange}} />
+        {{#if v.errorMessage.value}}
+          <p data-test-error>{{v.errorMessage.value}}</p>
         {{else}}
         ok
         {{/if}}
@@ -86,7 +86,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         'the element is invalid due to no value on a required field'
       );
 
-    this.set('doc', 'some content');
+    this.set('selectedValue', 'foo');
     await settled();
     assert
       .dom('[data-test-error]')

@@ -56,7 +56,7 @@ export default class ValidatorContainer extends Component {
     if (this.isValid) {
       saveForm(event);
     } else {
-      this.element.querySelector(invalidSelector).focus();
+      this.element.querySelector(invalidSelector)?.focus();
     }
   }
 }
