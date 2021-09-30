@@ -2,6 +2,19 @@
 
 
 
+
+## v1.0.1 (2021-09-30)
+
+#### :rocket: Enhancement
+* [#61](https://github.com/bhsiung/ember-form-validity/pull/61) add test for editable content ([@bhsiung](https://github.com/bhsiung))
+
+#### :bug: Bug Fix
+* [#61](https://github.com/bhsiung/ember-form-validity/pull/61) add test for editable content ([@bhsiung](https://github.com/bhsiung))
+
+#### Committers: 1
+- bear ([@bhsiung](https://github.com/bhsiung))
+
+
 ## v1.0.0 (2021-09-30)
 
 #### :rocket: Enhancement
