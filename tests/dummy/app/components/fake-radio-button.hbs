@@ -1,0 +1,5 @@
+<div contenteditable="true" ...attributes data-value={{@selectedValue}}>
+  {{#each @values as |value|}}
+    <span tabindex="0" data-selected={{eq value @selectedValue}} {{on "click" (fn this.onClick value)}}>option {{value}}</span>
+  {{/each}}
+</div>
