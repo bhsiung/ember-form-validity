@@ -135,13 +135,16 @@ export default class ValidatorWrapper extends Component {
           false,
           { id: MALFORMED_CUSTOM_VALIDATOR_RETURN }
         );
-      } else if (!isValidationKeyMatch(result, this.targetInputNames)) {
-        warn('The error key mismatches the input element name', false, {
-          id: VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
-        });
-      } else if (!isEmptyValidationError(result)) {
-        this.loading = false;
-        return result;
+      } else {
+        if (!isValidationKeyMatch(result, this.targetInputNames)) {
+          warn('The error key mismatches the input element name', false, {
+            id: VALIDATOR_ERROR_MISMATCH_ELEMENT_NAME,
+          });
+        }
+        if (!isEmptyValidationError(result)) {
+          this.loading = false;
+          return result;
+        }
       }
     }
     this.loading = false;
@@ -157,7 +160,7 @@ export default class ValidatorWrapper extends Component {
 
     const error = await this._customValidate(element);
     if (this.isDestroying || this.isDestroyed) return {};
-    this._setCustomValidity(element, error, /** isAriaInvalid*/ true);
+    this._setCustomValidity(element, error);
     this.hadCustomError = true;
 
     return error;
@@ -169,18 +172,28 @@ export default class ValidatorWrapper extends Component {
    * is available function on this element.
    * @param {Element} rootElement
    * @param {ValidationError} error
-   * @param {Boolean} isAriaInvalid
    */
-  _setCustomValidity(rootElement, error, isAriaInvalid) {
-    for (const inputName of this.targetInputNames) {
-      const inputElement = rootElement.querySelector(`[name=${inputName}]`);
-      if (!inputElement.setCustomValidity) {
-        isAriaInvalid;
-        // TODO bear - work on artificial validation later
-        // invalidElement.dataset.errorMessage = errorMessage;
-        // invalidElement.setAttribute('aria-invalid', isAriaInvalid);
-      } else {
-        inputElement.setCustomValidity(error[inputName] ?? '');
+  _setCustomValidity(rootElement, error) {
+    if (this.targetInputNames.length) {
+      for (const inputName of this.targetInputNames) {
+        const inputElement = rootElement.querySelector(`[name=${inputName}]`);
+        if (inputElement.setCustomValidity) {
+          inputElement.setCustomValidity(error[inputName] ?? '');
+        }
+      }
+    } else {
+      const customInputElement = rootElement.querySelector(
+        '[contenteditable="true"]'
+      );
+      if (customInputElement) {
+        const isValid = Object.values(error).reduce(
+          (valid, errorMessage) => valid && !errorMessage,
+          true
+        );
+        customInputElement.setAttribute(
+          'aria-invalid',
+          isValid ? 'false' : 'true'
+        );
       }
     }
   }
@@ -269,19 +282,16 @@ export default class ValidatorWrapper extends Component {
       // node failed on custom validation from the last execution, user fixed it but violate the
       // constraint validation immediately. There is no easy way to tell if there is constraint
       // validation without rest the custom error first
-      this._setCustomValidity(
-        rootElement,
-        /** errorMessage */ {},
-        /** isAriaInvalid*/ false
-      );
+      this._setCustomValidity(rootElement, {});
     }
 
     let error = {};
     const errorFromConstraintValidation =
       this._collectConstraintViolation(rootElement);
     const anyFieldPassedConstraintValidation =
+      this.targetInputNames.length === 0 ||
       this.targetInputNames.length >
-      Object.keys(errorFromConstraintValidation).length;
+        Object.keys(errorFromConstraintValidation).length;
     if (anyFieldPassedConstraintValidation) {
       error = {
         ...(await this._collectCustomViolation(rootElement)),
