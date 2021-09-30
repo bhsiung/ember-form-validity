@@ -45,70 +45,61 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     this.onWrapperValidate = sinon.stub();
   });
 
-  // skip('it validates contenteditable field', async function (assert) {
-  // // TODO bear
-  // this.validateNotEmpty = validateNotEmpty;
-  // this.value = '';
-  // this.validating = false;
+  test('it validates contenteditable field', async function (assert) {
+    const that = this;
+    this.doc = '';
+    this.requireDoc = function ({ doc }) {
+      return {
+        doc: doc ? null : 'doc is required',
+      };
+    };
+    this.onChange = function (newValue) {
+      that.set('doc', newValue);
+    };
 
-  // this.onchange = function () {
-  // this.set(
-  // 'value',
-  // document.querySelector('[name="rich-text-editor"]').textContent.trim()
-  // );
-  // };
+    await render(hbs`
+      <ValidatorWrapper
+        data-test-attr="foo"
+        class="test-class"
+        @validator={{this.requireDoc}}
+        @validating={{true}}
+        @model={{hash doc=this.doc}}
+        @onWrapperValidate={{this.onWrapperValidate}}
+        @registerId={{this.registerId}}
+        as |v|>
+      >
+        <TuiEditor name="doc" @value={{this.doc}} @onChange={{this.onChange}} />
+        {{#if v.errorMessage.doc}}
+          <p data-test-error>{{v.errorMessage.doc}}</p>
+        {{else}}
+        ok
+        {{/if}}
+      </ValidatorWrapper>
+    `);
 
-  // await render(hbs`
-  // <ValidatorWrapper
-  // @validator={{array this.validateNotEmpty}}
-  // @validating={{this.validating}}
-  // @model={{this.value}}
-  // as |validity|
-  // >
-  // {{fake-input
-  // onValidate=validity.validator
-  // value=this.value
-  // name="rich-text-editor"
-  // required=true
-  // }}
-  // {{#if (get v.errorMessage "rich-text-editor")}}
-  // <p data-test-error>{{(get v.errorMessage "simple-email")}}</p>
-  // {{/if}}
-  // </ValidatorWrapper>
-  // `);
+    assert.dom('[data-test-error]').exists('the error message displays');
+    assert
+      .dom('[contenteditable]')
+      .hasAttribute(
+        'aria-invalid',
+        'true',
+        'the element is invalid due to no value on a required field'
+      );
 
-  // assert
-  // .dom('[data-test-error]')
-  // .doesNotExist('since validating is false, no error rendered');
-  // assert
-  // .dom('[name="rich-text-editor"]')
-  // .hasAttribute(
-  // 'aria-invalid',
-  // 'true',
-  // 'the element is invalid due to no value on a required field'
-  // );
-
-  // // set validating to true
-  // this.set('validating', true);
-  // assert
-  // .dom('[data-test-error]')
-  // .exists(
-  // 'display error message for empty value on required field (constraint violation)'
-  // );
-
-  // // enter a value
-  // await fillIn('[name="rich-text-editor"]', '123');
-  // assert
-  // .dom('[data-test-error]')
-  // .doesNotExist('display no error because it passed the validation');
-  // assert
-  // .dom('[name="rich-text-editor"]')
-  // .hasAttribute(
-  // 'aria-invalid',
-  // 'false',
-  // 'the element is valid since the value is not empty'
-  // );
-  // });
+    this.set('doc', 'some content');
+    await settled();
+    assert
+      .dom('[data-test-error]')
+      .doesNotExist('the error message does not display');
+    assert
+      .dom('[contenteditable]')
+      .hasAttribute(
+        'aria-invalid',
+        'false',
+        'the element is no longer invalid when doc has content'
+      );
+    await settled();
+  });
 
   test('it validate simple input field', async function (assert) {
     this.registerId = sinon.stub().returns(1);
