@@ -1,6 +1,6 @@
 import { module, test } from 'qunit';
 import { setupRenderingTest } from 'ember-qunit';
-import { fillIn, click, render } from '@ember/test-helpers';
+import { click, fillIn, render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 
@@ -55,7 +55,7 @@ module('Integration | Component | validator-container', (hooks) => {
   `);
 
     assert
-      .dom('[data-test-validator-container]')
+      .dom('[data-test-global-error]')
       .exists('global error message displayed due to error in the form');
     assert
       .dom('[data-test-global-error]')
@@ -166,6 +166,69 @@ module('Integration | Component | validator-container', (hooks) => {
     assert.ok(
       this.onSubmit.called,
       'submit callback went thru because form validation passed'
+    );
+  });
+
+  test('it can validate field dynamically', async function (assert) {
+    this.model = { email: '' };
+    this.showEmailField = true;
+    this.onInput = (e) => {
+      this.set('model.email', e.target.value);
+    };
+    this.onToggle = (e) => {
+      e.preventDefault();
+      this.set('showEmailField', !this.showEmailField);
+    };
+    await render(hbs`
+      <ValidatorContainer @validating={{true}} as |v|>
+        {{#unless v.isValid}}
+          <p data-test-global-error>something wrong</p>
+        {{/unless}}
+
+        <button data-test-toggler {{on "click" this.onToggle}}>toggle email field</button>
+        {{#if this.showEmailField}}
+          <v.validity @model={{this.model}} as |validity|>
+            <input {{on "input" this.onInput}}
+              type="email"
+              name="email"
+              required
+              value={{this.model.email}} />
+            {{#if validity.errorMessage.email}}
+              <p data-test-error>{{validity.errorMessage.email}}</p>
+            {{/if}}
+          </v.validity>
+        {{/if}}
+        <button data-test-save {{on "click" (fn v.checkForm this.onSubmit)}}>save</button>
+      </ValidatorContainer>
+  `);
+
+    assert
+      .dom('[data-test-global-error]')
+      .exists('global error message displayed due to error in the form');
+
+    // remove email field
+    await click('[data-test-toggler]');
+    assert
+      .dom('[data-test-global-error]')
+      .doesNotExist(
+        'global error message is removed because the invalid field has been removed'
+      );
+    await click('[data-test-save]');
+    assert.ok(
+      this.onSubmit.called,
+      'onSubmit should be executed because the form is now valid'
+    );
+
+    // reveal email field
+    this.onSubmit.resetHistory();
+    await click('[data-test-toggler]');
+    assert
+      .dom('[data-test-global-error]')
+      .exists('global error message resumed');
+    await click('[data-test-save]');
+    assert.notOk(
+      this.onSubmit.called,
+      'onSubmit should not be executed because the form is now invalid again'
     );
   });
 });

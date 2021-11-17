@@ -36,6 +36,12 @@ export default class ValidatorContainer extends Component {
   }
 
   @action
+  unregisterId(id) {
+    delete this.wrapperMap[id];
+    this.isValid = this.validateWrappers();
+  }
+
+  @action
   registerElement(element) {
     this.element = element;
   }
