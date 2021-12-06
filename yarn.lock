@@ -5148,10 +5148,10 @@ data-urls@^3.0.0:
     whatwg-mimetype "^2.3.0"
     whatwg-url "^9.0.0"
 
-date-fns@^2.25.0:
-  version "2.25.0"
-  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.25.0.tgz#8c5c8f1d958be3809a9a03f4b742eba894fc5680"
-  integrity sha512-ovYRFnTrbGPD4nqaEqescPEv1mNwvt+UTqI3Ay9SzNtey9NZnYu6E2qCcBBgJ6/2VF1zGGygpyTDITqpQQ5e+w==
+date-fns@^2.26.0:
+  version "2.27.0"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.27.0.tgz#e1ff3c3ddbbab8a2eaadbb6106be2929a5a2d92b"
+  integrity sha512-sj+J0Mo2p2X1e306MHq282WS4/A8Pz/95GIFcsPNMPMZVI3EUrAdSv90al1k+p74WGLCruMXk23bfEDZa71X9Q==
 
 date-time@^2.1.0:
   version "2.1.0"
@@ -6285,15 +6285,15 @@ ember-source@~3.28.6:
     semver "^7.3.4"
     silent-error "^1.1.1"
 
-ember-template-lint@^3.10.0:
-  version "3.10.0"
-  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-3.10.0.tgz#7d728dacfe787b582ff4c240b63e85e5d6200a26"
-  integrity sha512-QP6gN9FwZbK+ypDr5PLXeKMPuAvKwfOWpIoqVD6DB660evnKE+rXfAdNga3CqSC7mDekpgJoLuxVQUw9oLcnjQ==
+ember-template-lint@^3.14.0:
+  version "3.14.0"
+  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-3.14.0.tgz#4e7ac709979b229612cab66e8258cf175eefaca2"
+  integrity sha512-0elxAseSft1SjQFcwqYddCXcsBW783M8TBXQ/eGXBzWTZVFwh/Oe+13SggVeUoyr9ZUX9ngW6rFEsKIyofY0KA==
   dependencies:
     "@ember-template-lint/todo-utils" "^10.0.0"
     chalk "^4.1.2"
     ci-info "^3.2.0"
-    date-fns "^2.25.0"
+    date-fns "^2.26.0"
     ember-template-recast "^5.0.3"
     find-up "^5.0.0"
     fuse.js "^6.4.6"
