@@ -7,14 +7,14 @@
     "form",
     "validation"
   ],
+  "homepage": "https://ember-for-validity.netlify.app/",
+  "bugs": {
+    "url": "https://github.com/bhsiung/ember-form-validity/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/bhsiung/ember-form-validity.git"
   },
-  "bugs": {
-    "url": "https://github.com/bhsiung/ember-form-validity/issues"
-  },
-  "homepage": "https://ember-for-validity.netlify.app/",
   "license": "MIT",
   "author": "Biingyann Hsiung",
   "directories": {
@@ -39,11 +39,11 @@
     "ember-cli-htmlbars": "^6.0.0"
   },
   "devDependencies": {
-    "@ember/optional-features": "^2.0.0",
+    "@ember/optional-features": "^1.3.0",
     "@ember/test-helpers": "^2.6.0",
     "@embroider/test-setup": "^0.47.0",
-    "@glimmer/component": "^1.0.4",
-    "@glimmer/tracking": "^1.0.4",
+    "@glimmer/component": "^1.0.0",
+    "@glimmer/tracking": "^1.0.0",
     "babel-eslint": "^10.1.0",
     "broccoli-asset-rev": "^3.0.0",
     "ember-auto-import": "^2.2.4",
