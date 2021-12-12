@@ -4,6 +4,7 @@ import { click, fillIn, find, render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 import { defer, resolve } from 'rsvp';
+import { getCustomError } from 'dummy/utils/custom-error-message';
 
 // const NOT_EMPTY_ERROR = 'NOT_EMPTY_ERROR';
 
@@ -34,6 +35,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
 
   hooks.beforeEach(function beforeEach() {
     const that = this;
+    this.getCustomError = getCustomError;
     this.onInput = function (e) {
       const element = e.target;
       that.set('model.email', element.value);
@@ -592,7 +594,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       <ValidatorWrapper
         @model={{hash date=this.date url=this.url}}
         @validating={{true}}
-        @customErrorFactory={{custom-error-message}}
+        @customErrorFactory={{this.getCustomError}}
         as |v|
       >
         <input

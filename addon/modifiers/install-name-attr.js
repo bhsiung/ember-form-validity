@@ -13,14 +13,14 @@ import Modifier from 'ember-modifier';
 export default class InstallNameAttribute extends Modifier {
   didInstall() {
     const [name, selector] = this.args.positional;
-    let formElement;
+    let inputElement;
     if (selector) {
-      formElement = this.element.querySelector(selector);
+      inputElement = this.element.querySelector(selector);
     } else {
-      formElement = this.element.querySelector('input,select');
+      inputElement = this.element.querySelector('input,select');
     }
-    if (formElement) {
-      formElement.setAttribute('name', name);
+    if (inputElement) {
+      inputElement.setAttribute('name', name);
     }
   }
 }

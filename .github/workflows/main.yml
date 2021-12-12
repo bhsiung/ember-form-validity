@@ -52,7 +52,6 @@ jobs:
           - ember-lts-3.20
           - ember-lts-3.26
           - ember-release
-          - ember-default-with-jquery
           - ember-classic
         experimental: [false]
         # include:
