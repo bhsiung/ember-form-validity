@@ -50,6 +50,7 @@ import { debounce } from '@ember/runloop';
  * @param {CustomValidatorCallback|CustomValidatorCallback[]} [validator] - single or a set of validator to be tested
  * @param {Function} [onWrapperValidate] - trigger and report the validation result to the container
  * @param {Function} [registerId] - assigned an ID from the container for tracking
+ * @param {Function} [unregisterId] - unassigned an ID from the container for tracking (used when destroying)
  * @param {CustomErrorFactory} [customErrorFactory]
  *
  * yield properties
@@ -119,6 +120,11 @@ export default class ValidatorWrapper extends Component {
     super(...arguments);
     if (isEmpty(this.args.model))
       throw new Error('model prop is required for validator wrapper');
+  }
+
+  willDestroy() {
+    super.willDestroy(...arguments);
+    this.args.unregisterId?.(this?.wrapperId);
   }
 
   /**
@@ -255,9 +261,7 @@ export default class ValidatorWrapper extends Component {
 
   @action
   onInsert(element) {
-    if (typeof this.args.registerId === 'function') {
-      this.wrapperId = this.args.registerId();
-    }
+    this.wrapperId = this.args.registerId?.();
     this._collectInputNames(element);
     this.contextualValidator(element);
   }
