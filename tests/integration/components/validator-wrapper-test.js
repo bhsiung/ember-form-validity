@@ -233,7 +233,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         'LINKEDIN_EMAIL_ERROR',
         'display error message for linkedin email not allowed (model update)(custom violation)'
       );
-    assert.equal(
+    assert.strictEqual(
       this.onWrapperValidate.args.length,
       7,
       'validation has been called 7 times'
