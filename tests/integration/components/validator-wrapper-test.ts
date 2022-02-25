@@ -4,61 +4,58 @@ import { click, fillIn, find, render, settled } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 import { defer, resolve } from 'rsvp';
-import { getCustomError } from 'dummy/utils/custom-error-message';
+import { getErrorFromElement } from 'dummy/utils/custom-error-message';
+import { ValidationModel } from 'ember-form-validity/components/validator-wrapper';
 
-// const NOT_EMPTY_ERROR = 'NOT_EMPTY_ERROR';
-
-function notLinkedinEmail(model) {
-  return /.+@linkedin\.com$/.test(model.email)
+declare interface InputEvent<T> {
+  target: { value: T };
+}
+function notLinkedinEmail(model: ValidationModel) {
+  return /.+@linkedin\.com$/.test(model.email as string)
     ? { email: 'LINKEDIN_EMAIL_ERROR' }
     : {};
 }
 
-function notMsEmail(model) {
-  return /.+@microsoft\.com$/.test(model.email)
+function notMsEmail(model: ValidationModel) {
+  return /.+@microsoft\.com$/.test(model.email as string)
     ? { email: 'MS_EMAIL_ERROR' }
     : {};
 }
 
-// function validateNotEmpty(model) {
-// if (model['rich-text-editor'].length === 0) {
-// return {
-// 'rich-text-editor': NOT_EMPTY_ERROR,
-// };
-// }
-
-// return {};
-// }
-
 module('Integration | Component | validator-wrapper', (hooks) => {
   setupRenderingTest(hooks);
+  const onWrapperValidate = sinon.stub();
 
   hooks.beforeEach(function beforeEach() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
-    this.getCustomError = getCustomError;
-    this.onInput = function (e) {
+    this.set('getCustomError', getErrorFromElement);
+    this.set('onInput', function (e: InputEvent<string>) {
       const element = e.target;
       that.set('model.email', element.value);
-    };
-    this.onInput2 = function (e) {
+    });
+    this.set('onInput2', function (e: InputEvent<string>) {
       const element = e.target;
       that.set('model.field2', element.value);
-    };
-    this.onWrapperValidate = sinon.stub();
+    });
+    this.set('onWrapperValidate', onWrapperValidate);
   });
 
   test('it validates contenteditable field', async function (assert) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
-    this.values = ['', 'abc', 'foo', 'bar'];
-    this.selectedValue = '';
-    this.isRequire = function ({ value }) {
-      return {
-        value: value ? null : 'value is required',
-      };
-    };
-    this.onChange = function (newValue) {
-      that.set('selectedValue', newValue);
-    };
+    this.setProperties({
+      values: ['', 'abc', 'foo', 'bar'],
+      selectedValue: '',
+      isRequire: function ({ value }: { value: unknown }) {
+        return {
+          value: value ? null : 'value is required',
+        };
+      },
+      onChange: function (newValue: unknown) {
+        that.set('selectedValue', newValue);
+      },
+    });
 
     await render(hbs`
       <ValidatorWrapper
@@ -104,11 +101,13 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   });
 
   test('it validate simple input field', async function (assert) {
-    this.registerId = sinon.stub().returns(1);
-    this.notLinkedinEmail = notLinkedinEmail;
-    this.notMsEmail = notMsEmail;
-    this.model = { email: '' };
-    this.validating = false;
+    this.setProperties({
+      registerId: sinon.stub().returns(1),
+      notLinkedinEmail: notLinkedinEmail,
+      notMsEmail: notMsEmail,
+      model: { email: '' },
+      validating: false,
+    });
 
     await render(hbs`
       <ValidatorWrapper
@@ -149,11 +148,11 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       .dom('[data-test-error]')
       .doesNotExist('since validating is false, no error rendered');
     assert.notOk(
-      find('[data-test-input]').validity.valid,
+      (find('[data-test-input]') as HTMLInputElement).validity.valid,
       'the input element is invalid due to no value on a required field'
     );
     assert.ok(
-      this.onWrapperValidate.calledWithExactly(1, false),
+      onWrapperValidate.calledWithExactly(1, false),
       'the validation failure event has been delegate to the container level'
     );
 
@@ -175,7 +174,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         'display error message for not email (constraint violation)'
       );
     assert.notOk(
-      find('[data-test-input]').validity.valid,
+      (find('[data-test-input]') as HTMLInputElement).validity.valid,
       'the input element is invalid due to violate [type=email]'
     );
 
@@ -206,7 +205,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         'display error message when the email address is from microsoft (custom violation)'
       );
     assert.notOk(
-      find('[data-test-input]').validity.valid,
+      (find('[data-test-input]') as HTMLInputElement).validity.valid,
       'the input element is invalid when the email address is from microsoft (custom violation)'
     );
 
@@ -216,11 +215,11 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       .dom('[data-test-error]')
       .doesNotExist('display no error when the email is valid');
     assert.ok(
-      find('[data-test-input]').validity.valid,
+      (find('[data-test-input]') as HTMLInputElement).validity.valid,
       'the input element is valid'
     );
     assert.ok(
-      this.onWrapperValidate.calledWithExactly(1, true),
+      onWrapperValidate.calledWithExactly(1, true),
       'the validation success event has been delegate to the container level'
     );
 
@@ -234,20 +233,29 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         'display error message for linkedin email not allowed (model update)(custom violation)'
       );
     assert.strictEqual(
-      this.onWrapperValidate.args.length,
+      onWrapperValidate.args.length,
       7,
       'validation has been called 7 times'
     );
   });
 
   test('can handle multiple input', async function (assert) {
-    this.model = { email: '', field2: '' };
-    this.customValidator = function customValidator({ email, field2 }) {
-      return {
-        email: /invalid/.test(email) ? 'CUSTOM_VALIDATION_ERROR_EMAIL' : '',
-        field2: field2 === 'invalid' ? 'CUSTOM_VALIDATION_ERROR_FIELD2' : '',
-      };
-    };
+    const model = { email: '', field2: '' };
+    this.setProperties({
+      model,
+      customValidator: function customValidator({
+        email,
+        field2,
+      }: {
+        email: string;
+        field2: string;
+      }) {
+        return {
+          email: /invalid/.test(email) ? 'CUSTOM_VALIDATION_ERROR_EMAIL' : '',
+          field2: field2 === 'invalid' ? 'CUSTOM_VALIDATION_ERROR_FIELD2' : '',
+        };
+      },
+    });
 
     await render(hbs`
       <ValidatorWrapper
@@ -313,14 +321,14 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       );
 
     // 3. external change
-    this.set('model', { ...this.model, email: 'valid@foo.com' });
+    this.set('model', { ...model, email: 'valid@foo.com' });
     await settled();
     assert
       .dom('[data-test-error-email]')
       .doesNotExist(
         'validation error removed on email field after external change'
       );
-    this.set('model', { ...this.model, field2: 'foo' });
+    this.set('model', { ...model, field2: 'foo' });
     await settled();
     assert
       .dom('[data-test-error-field2]')
@@ -328,8 +336,12 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   });
 
   test('it warns when custom validator returns mismatch format', async function (assert) {
-    this.model = { data: 1 };
-    this.customValidator = function customValidator({ data }) {
+    const model = { data: 1 };
+    const customValidator = function customValidator({
+      data,
+    }: {
+      data: number;
+    }) {
       if (data === 1) {
         return 'error';
       } else if (data === 2) {
@@ -343,6 +355,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       }
       return {};
     };
+    this.setProperties({ model, customValidator });
 
     await render(hbs`
       <ValidatorWrapper
@@ -359,32 +372,40 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     `);
 
     assert.dom('[data-test-error]').doesNotExist();
-    this.set('model', { ...this.model, data: 2 });
+    this.set('model', { ...model, data: 2 });
     await settled();
     assert.dom('[data-test-error]').doesNotExist();
-    this.set('model', { ...this.model, data: 3 });
+    this.set('model', { ...model, data: 3 });
     await settled();
     assert.dom('[data-test-error]').doesNotExist();
-    this.set('model', { ...this.model, data: 4 });
+    this.set('model', { ...model, data: 4 });
     await settled();
     assert.dom('[data-test-error]').doesNotExist();
-    this.set('model', { ...this.model, data: 5 });
+    this.set('model', { ...model, data: 5 });
     await settled();
     assert.dom('[data-test-error]').hasText('error');
-    this.set('model', { ...this.model, data: 6 });
+    this.set('model', { ...model, data: 6 });
     await settled();
     assert.dom('[data-test-error]').doesNotExist();
   });
 
   test('can validate when external prop change', async function (assert) {
-    this.model = { email: '', field2: false };
-    this.customValidator = function customValidator({ email, field2 }) {
+    let model = { email: '', field2: false };
+    const customValidator = function ({
+      email,
+      field2,
+    }: {
+      email: string;
+      field2: string;
+    }) {
       if (/invalid/.test(email)) {
         return { email: 'CUSTOM_VALIDATION_ERROR_EMAIL1' };
       } else if (!field2) {
         return { email: 'CUSTOM_VALIDATION_ERROR_EMAIL2' };
       }
+      return {};
     };
+    this.setProperties({ model, customValidator });
 
     await render(hbs`
       <ValidatorWrapper
@@ -417,7 +438,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         'customValidator triggered on email field after user input'
       );
 
-    this.set('model', { ...this.model, email: 'valid' });
+    model = this.set('model', { ...model, email: 'valid' });
     await settled();
     assert
       .dom('[data-test-error-email]')
@@ -425,7 +446,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         'CUSTOM_VALIDATION_ERROR_EMAIL2',
         'second customValidator triggered'
       );
-    this.set('model', { ...this.model, field2: true });
+    model = this.set('model', { ...model, field2: true });
     await settled();
     assert
       .dom('[data-test-error-email]')
@@ -436,9 +457,9 @@ module('Integration | Component | validator-wrapper', (hooks) => {
     const deferred1 = defer();
     const deferred2 = defer();
     const deferred3 = defer();
-    this.model = { email: 'invalid@gmail.com' };
-    this.showForm = true;
-    this.customValidator = async function customValidator({ email }) {
+    const model = { email: 'invalid@gmail.com' };
+    const showForm = true;
+    const customValidator = async function ({ email }: { email: string }) {
       if (/^invalid/.test(email)) {
         await deferred1.promise;
         return { email: 'ASYNC_VALIDATION_ERROR' };
@@ -447,10 +468,17 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         return { email: '' };
       } else if (/^for-debunce/.test(email)) {
         await resolve({ email: '' });
+        return {};
       }
       await deferred3.promise;
+      return {};
     };
-    sinon.spy(this, 'customValidator');
+    const spiedCustomValidator = sinon.spy(customValidator);
+    this.setProperties({
+      model,
+      showForm,
+      customValidator: spiedCustomValidator,
+    });
 
     await render(hbs`
       {{#if this.showForm}}
@@ -509,13 +537,13 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       );
     deferred3.resolve();
     // assert debounce worked
-    this.customValidator.resetHistory();
+    spiedCustomValidator.resetHistory();
     fillIn('[data-test-email]', 'for-debunce1@gmail.com');
     fillIn('[data-test-email]', 'for-debunce2@gmail.com');
     fillIn('[data-test-email]', 'for-debunce3@gmail.com');
     await fillIn('[data-test-email]', 'for-debunce4@gmail.com');
     assert.ok(
-      this.customValidator.calledOnceWithExactly({
+      spiedCustomValidator.calledOnceWithExactly({
         email: 'for-debunce4@gmail.com',
       }),
       'to avoid performance issue, debouce is implemented implicitly, only the last call is invoked'
@@ -579,17 +607,18 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   });
 
   test('customize error for constraint violation', async function (assert) {
+    const onChangeDate = (e: InputEvent<string>) => {
+      this.set('date', e.target.value);
+    };
+    const onChangeUrl = (e: InputEvent<string>) => {
+      this.set('url', e.target.value);
+    };
     this.setProperties({
       date: '',
       url: 'wrong url',
+      onChangeDate,
+      onChangeUrl,
     });
-    this.onChangeDate = (e) => {
-      this.set('date', e.target.value);
-    };
-    this.onChangeUrl = (e) => {
-      console.log(e.target.value);
-      this.set('url', e.target.value);
-    };
     await render(hbs`
       <ValidatorWrapper
         @model={{hash date=this.date url=this.url}}
@@ -687,12 +716,13 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   });
 
   test('it can validate if the downstream component is lazy', async function (assert) {
-    this.registerId = sinon.stub().returns(1);
-    this.model = { email: '', isLoading: true };
+    const registerId = sinon.stub().returns(1);
+    const model = { email: '', isLoading: true };
     const deferred = defer();
     deferred.promise.then(() => {
       this.set('model.isLoading', false);
     });
+    this.setProperties({ registerId, model });
 
     await render(hbs`
       <ValidatorWrapper

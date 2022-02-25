@@ -3,14 +3,15 @@ import { setupRenderingTest } from 'ember-qunit';
 import { click, fillIn, render } from '@ember/test-helpers';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
-
+declare interface InputEvent<T> {
+  target: { value: T };
+}
+/* eslint-disable ember/no-get */
 module('Integration | Component | validator-container', (hooks) => {
   setupRenderingTest(hooks);
 
   hooks.beforeEach(function () {
-    this.onSubmit = sinon.spy((e) => {
-      e.preventDefault();
-    });
+    this.set('onSubmit', sinon.stub());
   });
 
   test('it renders', async function (assert) {
@@ -30,10 +31,10 @@ module('Integration | Component | validator-container', (hooks) => {
   });
 
   test('it can validate form when validating = true by default', async function (assert) {
-    this.model = { email: '' };
-    this.onInput = (e) => {
+    this.set('model', { email: '' });
+    this.set('onInput', (e: InputEvent<string>) => {
       this.set('model.email', e.target.value);
-    };
+    });
 
     await render(hbs`
       <ValidatorContainer @validating={{true}} as |v|>
@@ -66,23 +67,25 @@ module('Integration | Component | validator-container', (hooks) => {
   });
 
   test('it can validate form when validating = false by default', async function (assert) {
-    this.validator1 = ({ field1 }) => {
-      return {
-        field1: field1 % 2 === 0 ? '' : 'bad',
-      };
-    };
-    this.validator2 = ({ field2 }) => {
-      return {
-        field2: field2 % 2 === 1 ? '' : 'bad',
-      };
-    };
-    this.model = { field1: '', field2: '' };
-    this.onInput1 = (e) => {
-      this.set('model.field1', e.target.value);
-    };
-    this.onInput2 = (e) => {
-      this.set('model.field2', e.target.value);
-    };
+    this.setProperties({
+      validator1: ({ field1 }: { field1: number }) => {
+        return {
+          field1: field1 % 2 === 0 ? '' : 'bad',
+        };
+      },
+      validator2: ({ field2 }: { field2: number }) => {
+        return {
+          field2: field2 % 2 === 1 ? '' : 'bad',
+        };
+      },
+      model: { field1: '', field2: '' },
+      onInput1: (e: InputEvent<number>) => {
+        this.set('model.field1', e.target.value);
+      },
+      onInput2: (e: InputEvent<number>) => {
+        this.set('model.field2', e.target.value);
+      },
+    });
 
     await render(hbs`
       <ValidatorContainer @validating={{false}} as |v|>
@@ -140,7 +143,7 @@ module('Integration | Component | validator-container', (hooks) => {
       .dom('input[name="field1"]')
       .isFocused('the first invalid element should be focused');
     assert.notOk(
-      this.onSubmit.called,
+      this.get('onSubmit.called'),
       'submit callback stopped because form validation failed'
     );
 
@@ -155,7 +158,7 @@ module('Integration | Component | validator-container', (hooks) => {
     await click('[data-test-cta]');
     assert.dom('[data-test-error="field2"]').exists();
     assert.notOk(
-      this.onSubmit.called,
+      this.get('onSubmit.called'),
       'submit callback stopped because form validation failed'
     );
     await fillIn('input[name="field2"]', '1');
@@ -164,21 +167,23 @@ module('Integration | Component | validator-container', (hooks) => {
 
     await click('[data-test-cta]');
     assert.ok(
-      this.onSubmit.called,
+      this.get('onSubmit.called'),
       'submit callback went thru because form validation passed'
     );
   });
 
   test('it can validate field dynamically', async function (assert) {
-    this.model = { email: '' };
-    this.showEmailField = true;
-    this.onInput = (e) => {
-      this.set('model.email', e.target.value);
-    };
-    this.onToggle = (e) => {
-      e.preventDefault();
-      this.set('showEmailField', !this.showEmailField);
-    };
+    this.setProperties({
+      model: { email: '' },
+      showEmailField: true,
+      onInput: (e: InputEvent<string>) => {
+        this.set('model.email', e.target.value);
+      },
+      onToggle: (e: { preventDefault: () => void }) => {
+        e.preventDefault();
+        this.set('showEmailField', !this.get('showEmailField'));
+      },
+    });
     await render(hbs`
       <ValidatorContainer @validating={{true}} as |v|>
         {{#unless v.isValid}}
@@ -215,19 +220,19 @@ module('Integration | Component | validator-container', (hooks) => {
       );
     await click('[data-test-save]');
     assert.ok(
-      this.onSubmit.called,
+      this.get('onSubmit.called'),
       'onSubmit should be executed because the form is now valid'
     );
 
     // reveal email field
-    this.onSubmit.resetHistory();
+    (this.get('onSubmit') as sinon.SinonStub)?.resetHistory();
     await click('[data-test-toggler]');
     assert
       .dom('[data-test-global-error]')
       .exists('global error message resumed');
     await click('[data-test-save]');
     assert.notOk(
-      this.onSubmit.called,
+      (this.get('onSubmit') as sinon.SinonStub).called,
       'onSubmit should not be executed because the form is now invalid again'
     );
   });

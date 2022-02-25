@@ -1,4 +1,4 @@
-export function getCustomError(element) {
+export function getErrorFromElement(element: HTMLInputElement): string {
   if (element.name === 'date') {
     if (element.validity.valueMissing) {
       return 'VALUE_MISSING';

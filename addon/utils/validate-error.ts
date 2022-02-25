@@ -1,7 +1,8 @@
 import { isHTMLSafe } from '@ember/template';
 import { isEmpty } from '@ember/utils';
+import { ValidationError } from 'ember-form-validity/components/validator-wrapper';
 
-export function isValidValidationError(object) {
+export function isValidValidationError(object: ValidationError) {
   if (Array.isArray(object)) return false;
   if (typeof object !== 'object') return false;
   if (isEmpty(object)) return false;
@@ -11,20 +12,17 @@ export function isValidValidationError(object) {
   }
   return true;
 }
-export function isEmptyValidationError(object) {
-  if (!isValidValidationError(object))
-    throw new Error(
-      'The given object is invalid, unable to identify whether the validation has pass'
-    );
+export function isEmptyValidationError(object: ValidationError) {
   if (Object.keys(object).length === 0) return true;
   for (const key of Object.keys(object)) {
     if (object[key]) return false;
   }
   return true;
 }
-export function isValidationKeyMatch(object, availableNames) {
-  if (!isValidValidationError(object)) return false;
-
+export function isValidationKeyMatch(
+  object: ValidationError,
+  availableNames: string[]
+) {
   const errorKeys = Object.keys(object);
   for (const errorKey of errorKeys) {
     if (!availableNames.includes(errorKey)) return false;

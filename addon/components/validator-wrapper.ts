@@ -15,44 +15,37 @@ import {
 } from 'ember-form-validity/utils/validate-error';
 import { isEmpty } from '@ember/utils';
 import { debounce } from '@ember/runloop';
+import { SafeString } from '@ember/template/-private/handlebars';
+import { isHTMLSafe } from '@ember/template';
 
 /**
  * The structured error message will be used to print the error message, using
  * key-value structure that maps the element `name` attribute to the error
  * message it associates to
- * @type {Object.<string, string>} ValidationError
  */
+export type ValidationError = Record<string, string | SafeString>;
 
-/**
- * The structured model will be used to associates the current value of each
- * input element, using key-value structure that maps the element `name`
- * attribute to its value
- * @type {Object.<string, any>} ModelForValidation
- */
-
-/**
- * This callback produce customized error message for constraint validation
- * @callback CustomErrorFactory
- * @param {DOMNode} element - the target input element
- * @return {String} the designated error message.
- */
-
+export type ValidationModel = Record<string, unknown>;
 /**
  * This callback represents the custom validation such as max length check
- * @callback CustomValidatorCallback
- * @param {ModelForValidation} model
- * @return {ErrorObject}
  */
+type CustomValidatorCallback = (
+  modeL: ValidationModel
+) => Promise<ValidationError> | ValidationError;
 
+interface Args {
+  // immutable model to be used for validation The structured model
+  // will be used to associates the current value of each input element,
+  // using key-value structure that maps the element `name` attribute to its value
+  model: ValidationModel;
+  validating: boolean; // determine if the form is in validating mode
+  validator: CustomValidatorCallback | CustomValidatorCallback[]; // single or a set of validator to be tested
+  registerId: () => number; // assigned an ID from the container for tracking
+  unregisterId?: (id: number) => void; // unassigned an ID from the container for tracking (used when destroying)
+  customErrorFactory: (element: HTMLInputElement) => string; // contraint validation error message generator
+  onWrapperValidate: (id: number, isValid: boolean) => void; // trigger and report the validation result to the container
+}
 /**
- * @param {boolean} validating - determine if the form is in validating mode
- * @param {ModelForValidation} model - immutable model to be used for validation
- * @param {CustomValidatorCallback|CustomValidatorCallback[]} [validator] - single or a set of validator to be tested
- * @param {Function} [onWrapperValidate] - trigger and report the validation result to the container
- * @param {Function} [registerId] - assigned an ID from the container for tracking
- * @param {Function} [unregisterId] - unassigned an ID from the container for tracking (used when destroying)
- * @param {CustomErrorFactory} [customErrorFactory]
- *
  * yield properties
  * @param {ValidationError} errorMessage
  *
@@ -75,31 +68,30 @@ import { debounce } from '@ember/runloop';
  *   <p data-test-error>{{v.errorMessage.email}}</p>
  * </ValidatorWrapper>
  */
-export default class ValidatorWrapper extends Component {
-  /**
-   * @type {ValidationError}
-   */
-  @tracked error = {};
+export default class ValidatorWrapper extends Component<Args> {
+  @tracked error: ValidationError = {};
 
   /**
    * A flag to indicate if there has been a custom error detected from the last round
-   * @type {boolean}
    */
   hadCustomError = false;
 
   /**
    * A flag to indicate if the wrapper is currently loading async validation
-   * @type {boolean}
    */
   @tracked loading = false;
 
   /**
-   * proxied error message based on the `validating` flag
-   * @readonly
-   * @memberof ValidatorWrapper
-   * @type {string}
+   * optional id perceived from validator container
    */
-  get errorMessage() {
+  wrapperId?: number;
+
+  targetInputNames: string[] = [];
+
+  /**
+   * proxied error message based on the `validating` flag
+   */
+  get errorMessage(): ValidationError {
     return this.args.validating ? this.error : {};
   }
   /**
@@ -116,21 +108,18 @@ export default class ValidatorWrapper extends Component {
     return [this.args.validator];
   }
 
-  constructor() {
-    super(...arguments);
+  constructor(...args: [unknown, Args]) {
+    super(...args);
     if (isEmpty(this.args.model))
       throw new Error('model prop is required for validator wrapper');
   }
 
   willDestroy() {
-    super.willDestroy(...arguments);
-    this.args.unregisterId?.(this?.wrapperId);
+    super.willDestroy();
+    if (this.wrapperId !== undefined) this.args?.unregisterId?.(this.wrapperId);
   }
 
-  /**
-   * @returns {ValidationError}
-   */
-  async _customValidate() {
+  private async customValidate(): Promise<ValidationError> {
     this.loading = true;
     for (const validator of this.validators) {
       const result = await validator(this.args.model);
@@ -157,16 +146,14 @@ export default class ValidatorWrapper extends Component {
     return {};
   }
 
-  /**
-   * @param {DOMNode} element - the wrapper element
-   * @returns {ValidationError}
-   */
-  async _collectCustomViolation(element) {
+  private async collectCustomViolation(
+    element: HTMLElement
+  ): Promise<ValidationError> {
     if (this.validators.length === 0) return {};
 
-    const error = await this._customValidate(element);
+    const error = await this.customValidate();
     if (this.isDestroying || this.isDestroyed) return {};
-    this._setCustomValidity(element, error);
+    this.setCustomValidity(element, error);
     this.hadCustomError = true;
 
     return error;
@@ -176,15 +163,17 @@ export default class ValidatorWrapper extends Component {
    * Helper function to set or clear the error attributes on the element. It
    * handles the error differently based on whether or not `setCustomValidity`
    * is available function on this element.
-   * @param {Element} rootElement
-   * @param {ValidationError} error
    */
-  _setCustomValidity(rootElement, error) {
+  private setCustomValidity(rootElement: HTMLElement, error: ValidationError) {
     if (this.targetInputNames.length) {
       for (const inputName of this.targetInputNames) {
-        const inputElement = rootElement.querySelector(`[name=${inputName}]`);
+        const inputElement = rootElement.querySelector(
+          `[name=${inputName}]`
+        ) as HTMLInputElement;
         if (inputElement.setCustomValidity) {
-          inputElement.setCustomValidity(error[inputName] ?? '');
+          const _error = error[inputName];
+          const str = isHTMLSafe(_error) ? _error.toString() : _error;
+          inputElement.setCustomValidity(str ?? '');
         }
       }
     } else {
@@ -204,18 +193,16 @@ export default class ValidatorWrapper extends Component {
     }
   }
 
-  /**
-   * @param {DOMNode} rootElement
-   * @returns {ValidationError}
-   */
-  _collectConstraintViolation(rootElement) {
-    const elements = rootElement.querySelectorAll('input,select') ?? [
-      rootElement,
-    ];
-    const error = {};
+  collectConstraintViolation(rootElement: HTMLElement): ValidationError {
+    const elements: NodeListOf<HTMLInputElement> = rootElement.querySelectorAll(
+      'input,select'
+    ) ?? [rootElement];
+    const error: Record<string, string> = {};
     for (const element of elements) {
+      const name = element.getAttribute('name') ?? '';
       if (
-        this.targetInputNames.indexOf(element.name) > -1 &&
+        name &&
+        this.targetInputNames.indexOf(name) > -1 &&
         element.validity &&
         !element.validity.customError &&
         !element.validity.valid
@@ -231,20 +218,22 @@ export default class ValidatorWrapper extends Component {
     return error;
   }
 
-  /**
-   * @param {DOMNode} element
-   * @memberof ValidatorWrapper
-   */
-  _collectInputNames(element) {
+  private collectInputNames(element: HTMLElement) {
     const modelKeys = Object.keys(this.args.model);
-    const inputElements = [...element.querySelectorAll('input,select')];
+    const inputElements = [
+      ...element.querySelectorAll('input,select'),
+    ] as HTMLInputElement[];
     const inputNames = inputElements.reduce(
-      (names, element) =>
-        names.indexOf(element.name) === -1 ? [...names, element.name] : names,
-      []
+      (names: Set<string>, element: HTMLInputElement) => {
+        const name = element.getAttribute('name');
+        if (!name) return names;
+        names.add(name);
+        return names;
+      },
+      new Set()
     );
 
-    this.targetInputNames = intersection(modelKeys, inputNames);
+    this.targetInputNames = intersection<string>(modelKeys, inputNames);
     // TODO @bear - add test coverage
     warn(
       'Discovered some inputs does not have a `name` attribute, they will be ignored while validating',
@@ -254,59 +243,53 @@ export default class ValidatorWrapper extends Component {
   }
 
   @action
-  onReceiveProperties(element) {
-    this._collectInputNames(element);
+  onReceiveProperties(element: HTMLElement) {
+    this.collectInputNames(element);
     this.contextualValidator(element);
   }
 
   @action
-  onInsert(element) {
+  onInsert(element: HTMLElement) {
     this.wrapperId = this.args.registerId?.();
-    this._collectInputNames(element);
+    this.collectInputNames(element);
     this.contextualValidator(element);
   }
 
   /**
    * debounced validation handler
-   * @param {DOMNode} rootElement
-   * @return {ValidationError}
    */
   @action
-  async contextualValidator(rootElement) {
+  async contextualValidator(rootElement: HTMLElement) {
     debounce(this, this._contextualValidator, rootElement, 150);
   }
 
-  /**
-   * @param {DOMNode} rootElement
-   * @return {ValidationError}
-   */
-  async _contextualValidator(rootElement) {
+  private async _contextualValidator(rootElement: HTMLElement) {
     if (this.hadCustomError) {
       // this is needed for a corner case. assume both constraint and custom validator exists, a
       // node failed on custom validation from the last execution, user fixed it but violate the
       // constraint validation immediately. There is no easy way to tell if there is constraint
       // validation without rest the custom error first
-      this._setCustomValidity(rootElement, {});
+      this.setCustomValidity(rootElement, {});
     }
 
     let error = {};
     const errorFromConstraintValidation =
-      this._collectConstraintViolation(rootElement);
+      this.collectConstraintViolation(rootElement);
     const anyFieldPassedConstraintValidation =
       this.targetInputNames.length === 0 ||
       this.targetInputNames.length >
         Object.keys(errorFromConstraintValidation).length;
     if (anyFieldPassedConstraintValidation) {
       error = {
-        ...(await this._collectCustomViolation(rootElement)),
+        ...(await this.collectCustomViolation(rootElement)),
         ...errorFromConstraintValidation,
       };
-      if (this.isDestroying || this.isDestroyed) return {};
+      if (this.isDestroying || this.isDestroyed) return;
     } else {
       error = errorFromConstraintValidation;
     }
 
-    if (this.args.onWrapperValidate) {
+    if (this.args.onWrapperValidate && this.wrapperId !== undefined) {
       this.args.onWrapperValidate(
         this.wrapperId,
         isEmptyValidationError(error)
@@ -314,7 +297,7 @@ export default class ValidatorWrapper extends Component {
     }
 
     if (!this.isDestroying && !this.isDestroyed) {
-      return setProperties(this, { error });
+      setProperties(this, { error });
     }
   }
 }
