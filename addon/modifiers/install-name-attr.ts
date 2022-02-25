@@ -1,4 +1,4 @@
-import Modifier from 'ember-modifier';
+import Modifier, { ModifierArgs } from 'ember-modifier';
 
 /**
  *
@@ -10,7 +10,11 @@ import Modifier from 'ember-modifier';
  * <div {{ember-ts-job-posting$install-name-attribute "the-awesome-name" ".foo input"}}></div>
  */
 
-export default class InstallNameAttribute extends Modifier {
+interface Args extends ModifierArgs {
+  positional: [string, string];
+}
+
+export default class InstallNameAttribute extends Modifier<Args> {
   didInstall() {
     const [name, selector] = this.args.positional;
     let inputElement;

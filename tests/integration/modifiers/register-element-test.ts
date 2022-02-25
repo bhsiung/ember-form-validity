@@ -9,15 +9,14 @@ module('Integration | Modifier | registerElement', function (hooks) {
 
   // Replace this with your real tests.
   test('it renders', async function (assert) {
-    this.onInsert = sinon.stub();
+    const onInsert = sinon.stub();
+    this.setProperties({ onInsert });
     await render(
       hbs`<div data-test-element {{register-element this.onInsert}}></div>`
     );
 
     assert.ok(
-      this.onInsert.calledWithExactly(
-        document.querySelector('[data-test-element]')
-      )
+      onInsert.calledWithExactly(document.querySelector('[data-test-element]'))
     );
   });
 });
