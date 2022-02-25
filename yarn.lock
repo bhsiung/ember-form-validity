@@ -6026,7 +6026,7 @@ ember-modifier-manager-polyfill@^1.1.0, ember-modifier-manager-polyfill@^1.2.0:
     ember-cli-version-checker "^2.1.2"
     ember-compatibility-helpers "^1.2.0"
 
-ember-modifier@^3.0.0:
+ember-modifier@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/ember-modifier/-/ember-modifier-3.1.0.tgz#ba5b0941302accd787ed3dcfc8d20400b77ffc41"
   integrity sha512-G5Lj9jVFsD2sVJcRNQfaGKG1p81wT4LGfClBhCuB4TgwP1NGJKdqI+Q8BW2MptONxQt/71UjjUH0YK7Gm9eahg==
@@ -6154,7 +6154,7 @@ ember-source@~4.2.0:
     semver "^7.3.4"
     silent-error "^1.1.1"
 
-ember-template-lint@^4.0.0:
+ember-template-lint@^4.1.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-4.2.0.tgz#13ce814c414a07c2dfe8185067261ab3b1317317"
   integrity sha512-zuTo280sMarKwL92748fjMfBYogdN8AikbLPD+/csFbYA99HreG3DzgYj61uEjYaymA7nbyDmVYxfDTH9bHZAg==
@@ -6449,7 +6449,7 @@ escodegen@^2.0.0:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-config-prettier@^8.3.0:
+eslint-config-prettier@^8.4.0:
   version "8.4.0"
   resolved "https://registry.yarnpkg.com/eslint-config-prettier/-/eslint-config-prettier-8.4.0.tgz#8e6d17c7436649e98c4c2189868562921ef563de"
   integrity sha512-CFotdUcMY18nGRo5KGsnNxpznzhkopOcOo0InID+sgQssPrzjvsyKZPvOgymTFeHrFuC3Tzdf2YndhXtULK9Iw==
@@ -11444,7 +11444,7 @@ qunit-dom@^2.0.0:
     ember-cli-babel "^7.23.0"
     ember-cli-version-checker "^5.1.1"
 
-qunit@^2.17.2:
+qunit@^2.18.0:
   version "2.18.0"
   resolved "https://registry.yarnpkg.com/qunit/-/qunit-2.18.0.tgz#5a3efc8ee609e9d8f207a1ad317a9b02bb14bc6b"
   integrity sha512-Xw/zUm5t1JY8SNErki/qtw4fCuaaOZL+bPloZU+0kto+fO8j1JV9MQWqXO4kATfhEyJohlsKZpfg1HF7GOkpXw==
