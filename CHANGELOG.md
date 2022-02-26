@@ -3,6 +3,22 @@
 
 
 
+
+## v1.2.0 (2022-02-26)
+
+#### :rocket: Enhancement
+* [#166](https://github.com/bhsiung/ember-form-validity/pull/166) configuration for ts ([@bhsiung](https://github.com/bhsiung))
+* [#158](https://github.com/bhsiung/ember-form-validity/pull/158) convert code base to typescript ([@bhsiung](https://github.com/bhsiung))
+* [#107](https://github.com/bhsiung/ember-form-validity/pull/107) support destroy of validity wrapper ([@bhsiung](https://github.com/bhsiung))
+
+#### :bug: Bug Fix
+* [#166](https://github.com/bhsiung/ember-form-validity/pull/166) configuration for ts ([@bhsiung](https://github.com/bhsiung))
+* [#107](https://github.com/bhsiung/ember-form-validity/pull/107) support destroy of validity wrapper ([@bhsiung](https://github.com/bhsiung))
+
+#### Committers: 1
+- bear ([@bhsiung](https://github.com/bhsiung))
+
+
 ## v1.0.1 (2021-09-30)
 
 #### :rocket: Enhancement
