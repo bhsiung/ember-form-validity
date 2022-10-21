@@ -38,6 +38,10 @@ module('Integration | Component | validator-wrapper', (hooks) => {
       const element = e.target;
       that.set('model.field2', element.value);
     });
+    this.set('onInput3', function (e: InputEvent<string>) {
+      const element = e.target;
+      that.set('model.feedback', element.value);
+    });
     this.set('onWrapperValidate', onWrapperValidate);
   });
 
@@ -232,6 +236,98 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         'LINKEDIN_EMAIL_ERROR',
         'display error message for linkedin email not allowed (model update)(custom violation)'
       );
+    assert.strictEqual(
+      onWrapperValidate.args.length,
+      7,
+      'validation has been called 7 times'
+    );
+  });
+
+  test('it validates a textarea element', async function (assert) {
+    this.setProperties({
+      registerId: sinon.stub().returns(1),
+      model: { feedback: '' },
+      validating: false,
+    });
+
+    await render(hbs`
+      <ValidatorWrapper
+        data-test-attr="foo"
+        @validating={{this.validating}}
+        @model={{hash feedback=this.model.feedback}}
+        @onWrapperValidate={{this.onWrapperValidate}}
+        @registerId={{this.registerId}}
+        as |v|>
+        <textarea
+          name="feedback"
+          rows="5"
+          cols="30"
+          minlength="10"
+          maxlength="20"
+          value={{this.model.feedback}}
+          required
+          {{on "input" this.onInput3}}
+          data-test-textarea
+        >
+          Write something here…
+        </textarea>
+        {{#if v.errorMessage.feedback}}
+          <p data-test-error>{{v.errorMessage.feedback}}</p>
+        {{/if}}
+      </ValidatorWrapper>
+    `);
+
+    assert
+      .dom('[data-test-error]')
+      .doesNotExist('since validating is false, no error rendered');
+    assert.notOk(
+      (find('[data-test-textarea]') as HTMLTextAreaElement).validity.valid,
+      'the textarea element is invalid due to no value on a required field'
+    );
+    assert.ok(
+      onWrapperValidate.calledWithExactly(1, false),
+      'the validation failure event has been delegate to the container level'
+    );
+
+    // set validating to true
+    this.set('validating', true);
+    assert
+      .dom('[data-test-error]')
+      .hasText(
+        'Please fill out this field.',
+        'display error message for empty value on required <textarea> field (constraint violation)'
+      );
+
+    // enter text that's too short
+    await fillIn('[data-test-textarea]', 'hello');
+
+    await this.pauseTest()
+
+    assert
+      .dom('[data-test-error]')
+      .includesText(
+        'Please lengthen this text to 10 characters or more',
+        'displays an error message for text being too short (constraint violation)'
+      );
+    assert.notOk(
+      (find('[data-test-textarea]') as HTMLTextAreaElement).validity.valid,
+      'the textarea element is invalid due to violation of the text length [minlength="10"]'
+    );
+
+    // enter a valid text
+    await fillIn('[data-test-textarea]', 'This is perfect length');
+    assert
+      .dom('[data-test-error]')
+      .doesNotExist('display no error when the text is valid');
+    assert.ok(
+      (find('[data-test-textarea]') as HTMLTextAreaElement).validity.valid,
+      'the textarea element is valid'
+    );
+    assert.ok(
+      onWrapperValidate.calledWithExactly(1, true),
+      'the validation success event has been delegate to the container level'
+    );
+
     assert.strictEqual(
       onWrapperValidate.args.length,
       7,
