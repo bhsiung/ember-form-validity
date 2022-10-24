@@ -262,8 +262,6 @@ module('Integration | Component | validator-wrapper', (hooks) => {
           name="feedback"
           rows="5"
           cols="30"
-          minlength="10"
-          maxlength="20"
           value={{this.model.feedback}}
           required
           {{on "input" this.onInput3}}
@@ -298,24 +296,8 @@ module('Integration | Component | validator-wrapper', (hooks) => {
         'display error message for empty value on required <textarea> field (constraint violation)'
       );
 
-    // enter text that's too short
-    await fillIn('[data-test-textarea]', 'hello');
-
-    await this.pauseTest()
-
-    assert
-      .dom('[data-test-error]')
-      .includesText(
-        'Please lengthen this text to 10 characters or more',
-        'displays an error message for text being too short (constraint violation)'
-      );
-    assert.notOk(
-      (find('[data-test-textarea]') as HTMLTextAreaElement).validity.valid,
-      'the textarea element is invalid due to violation of the text length [minlength="10"]'
-    );
-
     // enter a valid text
-    await fillIn('[data-test-textarea]', 'This is perfect length');
+    await fillIn('[data-test-textarea]', 'This is some text');
     assert
       .dom('[data-test-error]')
       .doesNotExist('display no error when the text is valid');
@@ -330,8 +312,8 @@ module('Integration | Component | validator-wrapper', (hooks) => {
 
     assert.strictEqual(
       onWrapperValidate.args.length,
-      7,
-      'validation has been called 7 times'
+      9,
+      'validation has been called 9 times'
     );
   });
 
