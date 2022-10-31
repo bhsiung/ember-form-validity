@@ -1802,10 +1802,10 @@
     "@types/ember__array" "*"
     "@types/ember__object" "*"
 
-"@types/ember__component@*", "@types/ember__component@^4.0.4":
-  version "4.0.4"
-  resolved "https://registry.yarnpkg.com/@types/ember__component/-/ember__component-4.0.4.tgz#c6728536c71a082a32720ac2d0d8eed021dbf76f"
-  integrity sha512-Vj3LtBz2l7OVynGUlnRkDyEJhMVjD+xkdO2V2Dqy006Rfb7gkLtvQ8SEvmO4z2MlUzPv8+O19rVqRs4qLLbYOw==
+"@types/ember__component@*", "@types/ember__component@^4.0.11":
+  version "4.0.11"
+  resolved "https://registry.yarnpkg.com/@types/ember__component/-/ember__component-4.0.11.tgz#4f703ce3e60ec1063f178de62e0d15ee949b32fe"
+  integrity sha512-iwFf+qYBsGp9SycIb0lxGkdZPYpKxMcBoV5kCJbWyC6azuX2xPDXHx8n2lm8O9GrEFVJXfYC5bSXf33rdpy5Sw==
   dependencies:
     "@types/ember" "*"
     "@types/ember__component" "*"
