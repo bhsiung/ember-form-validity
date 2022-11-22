@@ -1,6 +1,6 @@
 # Basic use cases
 
-The validity component covers any kind of form element, here we listed all the possible validation can be handled with the constraint validation from browser. There are 2 kinds:
+The validity component covers any kind of form element, here we listed all the possible validation can be handled with the constraint validation from browser. There are 3 kinds:
 
 
 [Numeric value](#numericvalue):
@@ -17,6 +17,8 @@ The validity component covers any kind of form element, here we listed all the p
 - [password](#password)
 - [url](#url)
 - [email](#email)
+
+[Textarea](#textarea)
 
 Keep in mind in this page, we tried to list down most common input types that may involve validation. And provide examples of implementation with only browser API, there is another topic for the [usage of custom validation function](/01%20-%20API/#validatorcallbackcallback) and how to [customize the default error message](/03%20-%20Advanced%20usage/02%20-%20Customize%20error/) from browser API.
 
@@ -291,6 +293,37 @@ list of attributes available for validation:
       <br />
       <br />
       {{validity.errorMessage.email}}
+    {{/if}}
+  </v.validity>
+</ValidatorContainer>
+```
+## Textarea
+
+list of attributes available for validation:
+- required
+- maxlength
+- minlength
+
+```hbs
+<ValidatorContainer as |v|>
+  <v.validity @model={{hash feedback=this.feedback}} as |validity|>
+    <textarea
+      name="feedback"
+      rows="5"
+      cols="30"
+      minlength="10" 
+      maxlength="40"
+      value={{this.feedback}}
+      required
+      {{on "input" this.onInput}}
+      data-test-textarea
+    >
+      Write something here…
+    </textarea>
+    {{#if validity.errorMessage.feedback}}
+      <br />
+      <br />
+      {{validity.errorMessage.feedback}}
     {{/if}}
   </v.validity>
 </ValidatorContainer>

@@ -14,6 +14,7 @@ export default class SampleComponent extends Component {
   @tracked password = '';
   @tracked url = '';
   @tracked email = '';
+  @tracked feedback = '';
 
   @action
   onInput(e) {

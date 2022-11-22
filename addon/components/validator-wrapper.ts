@@ -195,7 +195,7 @@ export default class ValidatorWrapper extends Component<Args> {
 
   collectConstraintViolation(rootElement: HTMLElement): ValidationError {
     const elements: NodeListOf<HTMLInputElement> = rootElement.querySelectorAll(
-      'input,select'
+      'input,select,textarea'
     ) ?? [rootElement];
     const error: Record<string, string> = {};
     for (const element of elements) {
@@ -221,7 +221,7 @@ export default class ValidatorWrapper extends Component<Args> {
   private collectInputNames(element: HTMLElement) {
     const modelKeys = Object.keys(this.args.model);
     const inputElements = [
-      ...element.querySelectorAll('input,select'),
+      ...element.querySelectorAll('input,select,textarea'),
     ] as HTMLInputElement[];
     const inputNames = inputElements.reduce(
       (names: Set<string>, element: HTMLInputElement) => {
@@ -237,7 +237,9 @@ export default class ValidatorWrapper extends Component<Args> {
     // TODO @bear - add test coverage
     warn(
       'Discovered some inputs does not have a `name` attribute, they will be ignored while validating',
-      !element.querySelectorAll('input:not([name]),select:not([name])').length,
+      !element.querySelectorAll(
+        'input:not([name]),select:not([name]),textarea:not([name])'
+      ).length,
       { id: FORM_ELEMENT_WITHOUT_NAME_ATTR }
     );
   }
