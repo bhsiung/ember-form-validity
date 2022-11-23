@@ -10,6 +10,7 @@ declare interface InputEvent<T> {
 module('Integration | Component | validator-container', (hooks) => {
   setupRenderingTest(hooks);
 
+  // eslint-disable-next-line qunit/no-hooks-from-ancestor-modules
   hooks.beforeEach(function () {
     this.set('onSubmit', sinon.stub());
   });

@@ -26,6 +26,7 @@ module('Integration | Component | validator-wrapper', (hooks) => {
   setupRenderingTest(hooks);
   const onWrapperValidate = sinon.stub();
 
+  // eslint-disable-next-line qunit/no-hooks-from-ancestor-modules
   hooks.beforeEach(function beforeEach() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const that = this;
