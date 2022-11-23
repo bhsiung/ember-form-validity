@@ -18,11 +18,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
       - uses: volta-cli/action@v1
-        with:
-          node-version: 12.x
-          yarn-version: 1.22.10
       - run: yarn install --frozen-lockfile
       - run: yarn lint
 
@@ -33,9 +29,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: volta-cli/action@v1
-        with:
-          node-version: 12.x
-          yarn-version: 1.22.10
       - run: yarn install --frozen-lockfile
       - run: yarn test:ember
 
@@ -49,8 +42,8 @@ jobs:
       fail-fast: true
       matrix:
         ember-try-scenario:
-          - ember-lts-3.20
-          - ember-lts-3.26
+          # - ember-lts-3.20
+          # - ember-lts-3.26
           - ember-release
         experimental: [false]
         # include:
@@ -62,10 +55,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: volta-cli/action@v1
-        with:
-          node-version: 12.x
-          yarn-version: 1.22.5
-
       - run: yarn install --frozen-lockfile
 
       - name: test
