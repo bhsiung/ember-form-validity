@@ -4277,7 +4277,7 @@ cardinal@^1.0.0:
     ansicolors "~0.2.1"
     redeyed "~1.0.0"
 
-chalk@5.0.1, chalk@^5.0.0:
+chalk@5.0.1:
   version "5.0.1"
   resolved "https://registry.npmjs.org/chalk/-/chalk-5.0.1.tgz"
   integrity sha512-Fo07WOYGqMfCWHOzSXOt2CxDbC6skS/jO9ynEcmpANMoPrD+W1r1K6Vx7iNm+AQmETU1Xr2t+n8nzkV9t6xh3w==
@@ -4310,7 +4310,7 @@ chalk@^4.0.0, chalk@^4.1.0, chalk@^4.1.2:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
-chalk@^5.0.1, chalk@^5.1.2:
+chalk@^5.0.0, chalk@^5.0.1, chalk@^5.1.2:
   version "5.1.2"
   resolved "https://registry.npmjs.org/chalk/-/chalk-5.1.2.tgz"
   integrity sha512-E5CkT4jWURs1Vy5qGJye+XwCkNj7Od3Af7CP6SujMetSMkLs8Do2RWJK5yx1wamHV/op8Rz+9rltjaTQWDnEFQ==
@@ -4405,10 +4405,10 @@ chrome-trace-event@^1.0.2:
   resolved "https://registry.npmjs.org/chrome-trace-event/-/chrome-trace-event-1.0.3.tgz"
   integrity sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==
 
-ci-info@^3.2.0, ci-info@^3.3.2, ci-info@^3.4.0:
-  version "3.6.2"
-  resolved "https://registry.npmjs.org/ci-info/-/ci-info-3.6.2.tgz"
-  integrity sha512-lVZdhvbEudris15CLytp2u6Y0p5EKfztae9Fqa189MfNmln9F33XuH69v5fvNfiRN5/0eAUz2yJL3mo+nhaRKg==
+ci-info@^3.2.0, ci-info@^3.3.2, ci-info@^3.7.0:
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.7.0.tgz#6d01b3696c59915b6ce057e4aa4adfc2fa25f5ef"
+  integrity sha512-2CpRNYmImPx+RXKLq6jko/L07phmS9I02TyqkcNU20GCF/GgaWvc58hPtjxDX8lPpkdwc9sNh72V9k00S7ezog==
 
 cipher-base@^1.0.0, cipher-base@^1.0.1, cipher-base@^1.0.3:
   version "1.0.4"
@@ -6269,15 +6269,15 @@ ember-template-imports@^3.1.1, ember-template-imports@^3.4.0:
     string.prototype.matchall "^4.0.6"
     validate-peer-dependencies "^1.1.0"
 
-ember-template-lint@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.npmjs.org/ember-template-lint/-/ember-template-lint-5.0.1.tgz"
-  integrity sha512-LnFemz8BzdNcvtGlYMKPbimlt9KZYR4zGpKiUkDYHNaNkrG0jG99vYiLVRNhadqOTkc5kGWm3YswJ0hkgQMZKg==
+ember-template-lint@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/ember-template-lint/-/ember-template-lint-5.1.1.tgz#310157041cf69ac992c04f5aaf98fd07cfaab164"
+  integrity sha512-CPiVV9tQkD1HOR7weoaNAdzshdmJhsi7lprwpburTjLvaQEZqzOhwxaDnU/lDFJmom03gHjaLLdKvBaae/9U3A==
   dependencies:
     "@lint-todo/utils" "^13.0.3"
     aria-query "^5.0.2"
     chalk "^5.1.2"
-    ci-info "^3.4.0"
+    ci-info "^3.7.0"
     date-fns "^2.29.2"
     ember-template-imports "^3.4.0"
     ember-template-recast "^6.1.3"
